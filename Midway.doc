@@ -1,0 +1,397 @@
+MIDWAY(PUBLIC)							MIDWAY(PUBLIC)
+
+USAGE
+	% Midway [-b bad weather]
+
+HISTORY
+
+	   In the early summer of 1942 the Imperial Japanese Navy was
+	full of pride.  In the first six months of war they had already
+	conquered most of Asia and Micronesia.  There seemed to be no
+	stopping the "Yellow Tide" as it was called in the United
+	States.  In the summer of 1942, then, the Imperial War Machine
+	was found to be casting its lustful eye upon the Western
+	Pacific and even the West coast of North America.
+
+	   The American Pacific Fleet had been nearly annihilated at
+	Pearl Harbor and could muster little resistance to a Japanese
+	offensive.  Against the 11 Battleships of the Japanese Navy,
+	the United States had none.  Against the 12 Heavy Cruisers, 7.
+	Light Cruisers: 9 to 1.  And of the most powerful but yet
+	unappreciated ships, the Japanese had 8 Aircraft Carriers to
+	the United States' 3.
+
+	   Nevertheless, the 3 US Carriers were a perpetual thorn in the
+	Japanese Lion's side.  At the Battle of Coral Sea in April, the
+	US Carriers Enterprise, Yorktown, and Lexington put two Japanese
+	fleet Carriers out of action and sank the light Carrier Shoho.
+	The Lexington was sunk, but the Japanese had suffered their
+	first set-back.
+
+	   In an effort to crush the American Carriers once and for all,
+	Admiral Yamamoto assembled the largest fleet the world had ever
+	seen, and set sail for Midway Island, a morsel to eat on the way
+	to California.  His flagship was the gigantic Yamato, still the
+	largest Battleship ever built.  Admiral Nagumo in the Akagi had
+	command of 4 fleet Carriers and was in charge of reducing the
+	small Sand Island fortress to a smoking seashell.
+
+	   The future would have been grim for the American Pacific fleet
+	had not Admiral Nimitz been eating his Wheaties.  For several
+	months his CS majors had been busy cracking the Japanese code.
+	Thus, he knew the approximate location of the coming attack and
+	deployed his three Carriers and their escort ships north of Midway.
+
+	   On the morning of June 3, 1942 a PBY Catalina from Midway sighted
+	the Light Cruiser Jintsu and a high level bombing attack with B-17's
+	was commenced.  Not all the B-17's found the Jintsu but turned
+	north.  To their surprise they found Admiral Nagumo's 4 Aircraft
+	Carriers and dropped 20,000 lbs. of bombs without scoring a single
+	hit.  They killed a lot of fish though!
+
+	   Nagumo armed all of his Mitsubishi 97 bombers with 500 lb. bombs
+	and sent wave after wave to attack Midway Island.  Midway somehow
+	survived and Nagumo needed another attack to finish the job.  He
+	had no knowledge of the nearby American Carriers which were at that
+	moment launching planes for his own Akagi, Kaga, Soryu, and Hiryu.
+	He ordered his reserve planes to rearm with bombs for Midway while
+	the first attack squadron was still flying home.  He had been saving
+	these planes for any American ships which might have been discovered
+	during the bombardment of Midway.  Another fateful decision he made
+	was to wait for the first wave to land and refuel before launching his
+	second attack.  Thus all of his planes were on deck being refueled and
+	rearmed when the Yorktown's torpedo and dive bombers poured out of
+	the sky.
+
+	   The Akagi, Kaga, and Soryu were reduced to burning hulks within
+	minutes, and Nagumo went down with his ship.  Only the little Hiryu
+	was missed in the thunderous assault and could launch planes.  This
+	she did and the pilots followed the returning American planes home
+	to the Yorktown.  The Yorktown with only two Cruisers for support
+	fell prey to three 500 lb. bombs and was slowed from 21 to 6 knots.
+	The Enterprise launched her 4 remaining Douglass SBD Dauntless dive
+	bombers for the Hiryu.  By some miracle, all four found the Hiryu
+	and scored hits.  The Hiryu had to be scuttled and the Captain
+	committed Hara-Kiri.
+
+	  The Yorktown was hit by two aerial torpedoes by another squadron
+	from the Hiryu and started to list severely.  Admiral Fletcher
+	ordered his crew to abandon ship but the Yorktown refused to
+	sink.  He sent salvage crews on board and ordered a tug from
+	Pearl Harbor to tow the Yorktown to port.  The Americans would
+	have won a tremendous victory at Midway instead of their merely
+	wonderful victory had not a submarine torpedoed the listing
+	Yorktown and sent her to the bottom.  As it was, Yamamoto
+	was struck a monumental blow.  He realized even the Godzilla Yamato
+	was defenseless without air cover.  He turned his fleet back to
+	Japan and faced the wrath of the Emperor.  
+
+EPILOGUE
+	   
+	   The United States built a formidable Navy in two years which
+	was composed of some old Battleships and about 100 fleet and light
+	Carriers.  The largest sea battle of the war was fought in the
+	Phillippines at Leyte Gulf in 1944.  The Yamato's sister ship
+	was torpedoed 12 times by Carrier planes and sent to the bottom.
+	The Enterprise was the only American Carrier from the original 4
+	to survive the entire war.  She fought in every major battle from
+	Coral Sea to Leyte Gulf.  "Haul ass with Halsey," was the old war
+	cry.
+
+INSTRUCTIONS
+
+	   When you play Midway, you are in command of a ship which
+	can move, fire its big guns, and fire its anti-aircraft guns.
+	If you have choosen an Aircraft Carrier, you will have fighters,
+	torpedo bombers, and dive bombers to launch.
+
+	Launching Planes:
+	   
+	   c: Combat Air Patrol:
+	      
+		 You can send as many fighters as you like on
+		 patrol around the ship.  When your ship is attacked,
+		 they will take a big bite out of the attackers before
+		 they get you.
+
+	   f: Launch Fighters:
+		 
+		 It is a good idea to send fighter cover first when
+		 launching an attack on an enemy carrier, otherwise
+		 next to nothing will get through her CAP.  When
+		 you launch fighters you will be asked, "Target? ",
+		 at which point you type the name of the enemy ship
+		 you wish to attack.  The names must be capitalized,
+		 just like they are printed on the screen.
+
+	   b: Launch Dive Bombers:
+
+		 Bombers are good to launch next.  When they get within
+		 four squares of their target, they drop bombs which
+		 have a 50/50 chance of doing damage.  A 'square'
+		 corresponds to 1 nautical mile.  Dive bombers are
+		 ineffective against fighters.
+
+	   t: Launch Torpedo Bombers:
+		 
+		 Torpedo Bombers launch their fish at a range of 7 squares
+		 and are fun because they usually hit everything in sight.
+		 Torpedo Planes have rear gunners who can shoot down a
+		 fighter now and then.
+
+	   s: Launch Scout:
+		
+		Scout planes are the eyes of the fleet.  They spot the
+		bad guys before they spot you.  It is necessary to
+		spot a target before you can attack it!  Scout planes
+		subtract from your Torpedo Planes.  When launching scout
+		planes, the program will ask you for a course.  You
+		should respond by typing a number from 0 to 360, where
+		0 is north and 90 is east, etc.
+
+	   @: Launch Random Scouts:
+
+		You can send as many scouts as you like on random
+		scouting missions.  They fly a random walk.
+
+	   r: Recall Planes:
+
+		If you decide that it would be better to break radio
+		silence than to let your planes fly on their way, you
+		can signal them to return home with this command.
+
+
+	Recovering Planes:
+
+	   Planes are supposed to come back automatically after attacking
+	   their target.   If their mother ship has been sunk, they will
+	   try to land on their flagship.
+
+	Shooting down planes:
+
+	   If you think the bad guys are getting a little too close, you
+	   can fire your anti-aircraft guns with the direction keys
+
+				yu  k  io
+				  \ | /
+				h - + - l
+				  / | \
+				nm  j  ,.
+
+	   A '*' that hits adjacent to any plane (+ or -) destroys it.
+	   Example:
+				  +
+				 +* A hit!
+			^	+
+			|	 +
+			|	  +   * A miss!
+		       |||
+			|
+
+	   Some ships have more anti-aircraft guns than others, naturally.		
+	Moving:
+	   
+	   Ships move at the rate of one square per turn.  Scout planes
+	   move a fast 15 squares per turn, and heavy attack planes
+	   lumber along at leisurely 10 squares per turn.  Scout planes
+	   discover enemy ships if they fly within 50 squares of one.
+	   Attacking planes will do the same if within 30 squares.
+	   Ships don't spot each other until they are 25 squares apart.
+	   It's a big ocean out there!
+
+	   To steer your ship, use the direction keys:
+
+				YU  K  IO
+				  \ | /
+				H - + - L
+				  / | \
+				NM  J  <>
+	  
+	Flagships:
+
+	   The first ship in each task force is the flagship.  All
+	   the other ships follow it around.  A nice reason to play
+	   one is that if you get sunk, you can transfer your flag.
+	   A not-so-nice reason is that enemies shoot at flagships
+	   first.  When a flagship is sunk the next ship in line,
+	   if there is one left, becomes the flagship.
+
+	Firing Guns:
+	   
+	   Battleships and Cruiser and some Carriers have big guns
+	   which can be used against other surface vessels.  To fire
+	   your guns, type a carriage return.  If there is an enemy
+	   flagship within range (25 squares), he will feel your teeth.
+
+	Automatic Mode:
+	   
+	   If you think the battle is going slowly, type an 'a' to put
+	   the game into automatic mode.  Your ship will continue on
+	   its present course and the game will progress rather quickly
+	   until you resume manual control with an interrupt (^?).
+
+	   You can turn off the screen for even faster automatic mode
+	   with the command 'A'.  This 'silent running' mode is also
+	   terminated with an interrupt (^?).
+
+	   If you type 'w' then the program will go into 'A' super-crunch
+	   mode until something is printed on the 'notes' portion of
+	   the screen.  This command lets you go into automatic mode
+	   without the fear of being sunk before you can type an
+	   interrupt.  'w' will also be terminated by a interrupt (^?)
+	   in case you want to look around.
+
+	Scanning:
+
+	   If you want to look at another ship and watch it sink or
+	   something, type 'S'.  It will ask you for the ship's name.
+	   The data at the bottom of the screen as well as the display
+	   will show the scanned ship's current status.
+
+	Display:
+	   
+	   The lovely display has 10 different scales, 0-9.  Each higher
+	   scale shows twice as much ocean as the one preceding it.
+	   Scale 0 shows things as they really are, one space on the screen
+	   is one square wide.  At scale 9, one space on the screen is 512
+	   squares wide.  All ship's names are printed on scales lower
+	   than 4.  Only enemy ship's names are printed over scale 3.
+	   Also, only flagships are printed over scale 3.
+	   There are numerous other things that depend on the chosen
+	   scale, but I'm getting tired of writing this doc file.
+	      
+	   The display shows how many bomb or shell hits the ship you are
+	   looking at can take under the label 'hits.'  The number of torpedo
+	   hits it can take is recorded under the label 'torps.'  The
+	   ship's points (for sinking enemy ships) and her row, col are also
+	   printed.
+
+	   I know I forgot something.
+
+       Statistical Data:
+
+	  At the beginning of the game, every Carrier of the Japanese
+	  Imperial Navy launches planes for Midway.  This combined force
+	  numbers
+			79 Fighters
+			121 Dive Bombers
+			130 Torpedo Bombers
+
+	  for a total assault of 330 planes.  It is amazing that Midway
+	  can survive it at all!  Incidentally, when all the planes are in
+	  the air and attacking something, the program has to move over 400
+	  planes, ships, and torpedoes each turn!  A programming marvel!
+
+
+      Midway Quick Reference Command Table:
+
+		'h':
+		'l':
+		'j':		/* flack */
+		'k':
+		'i': 'o':
+		'.': ',':
+		'n': 'm':
+		'y': 'u':
+
+		'H':
+		'L':
+		'J':		/* move */
+		'K':
+		'I': 'O':
+		'>': '<':
+		'N': 'M':
+		'Y': 'U':
+
+		'\n':		/* fire guns */
+		
+		'c':
+		's':
+		't':		/* launch */
+		'f':
+		'b':
+		'@':
+		'r':
+
+		'a':		/* automatic */
+		'A':		/* silent super-crunch mode */
+		'w':		/* wait for action */
+		
+		'0':
+		'1':
+		'2':
+		'3':
+		'4':
+		'5':		/* scales */
+		'6':
+		'7':
+		'8':
+		'9':
+
+		'S':		/* scan */
+
+		'^L':		/* redraw */
+
+		'q':		/* play rogue */
+
+
+	Midway Symbol Table:
+
+		
+		'+':		/* American planes */
+		'-':		/* Japanese planes */
+		'?':		/* friendly scout planes */
+
+		'*':		/* anti-aircraft explosions */
+		'#':		/* bomb, shell or torpedo explosions */
+		'.':		/* unexploded topedoes */
+
+
+	Riggle's Book of Fighting Ships: 
+
+
+	 ^   	   -/	     		Aircraft: 24 to 78.
+	/+\  	 /++|	  /--\		
+	|+I  	/++//	  |+++>		Carriers: 7000 to 27000 tons.
+	|+I  	|+// 	  \--/		Guns: 0 to 3.
+	\_/  	 -   			AA: 2 to 4.
+
+	
+
+	  ^    	    /  			Aircraft: 1 to 3.
+	  |    	  //   	/-- 
+	 |||   	////   	---->		Battleships: 29000 to 73000 tons.
+	|||||  	///    	\--  		Guns: 7 to 10
+	\|||/  	\//    			AA: 2 to 3.
+
+
+
+	  ^    
+	  |    	   /   	 -     
+	  |    	  /    	---->  		Heavy Cruisers: 9000 to 10000 tons.
+	 |||   	//     	 -     		Guns: 3 to 4.
+	  |    	//     			AA: 1 to 2.
+
+
+
+	     
+	  ^    	   '   
+	  |    	  /    	 -->		Light Cruisers: 5000 to 6000 tons.
+	  |    	 /     			Guns: 1 to 2.
+					AA: 1.
+
+
+
+	 xxxx				Aircraft: 90.
+	x\-/x
+	x|o|x				Island:	250000 tons.
+	x/-\x				Guns: 5.
+	xxxxx				AA: 10.
+
+
+AUTHOR
+	Dave Riggle
+
+BUGS
+	Interrupting automatic mode messes up the screen sometimes.  Use ^L
+to fix it.

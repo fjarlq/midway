@@ -1,0 +1,1979 @@
+Relay-Version: version B 2.10 5/3/83; site utzoo.UUCP
+Posting-Version: version B 2.10.2 9/18/84; site ucbvax.ARPA
+Path: utzoo!watmath!clyde!burl!ulysses!ucbvax!yee
+From: yee@ucbvax.ARPA (Peter E. Yee)
+Newsgroups: net.sources
+Subject: Midway (Part 1 of 2)
+Message-ID: <4344@ucbvax.ARPA>
+Date: Wed, 23-Jan-85 22:08:03 EST
+Article-I.D.: ucbvax.4344
+Posted: Wed Jan 23 22:08:03 1985
+Date-Received: Thu, 24-Jan-85 08:22:44 EST
+Distribution: net
+Organization: University of California at Berkeley
+Lines: 1964
+
+This is the source to Midway, a simulation of the Battle of Midway.  It was
+written by David Riggle when he was a student here at the University of
+California at Berkeley.  This is part 1 of 2.  This program is made available
+on the basis that it is not copied or sold for profit, and that all notices
+of ownership and authorship remain intact.  Reports of bugs should be sent
+to ..ucbvax!yee.
+
+#	This is a shell archive.
+#	Remove everything above and including the cut line.
+#	Then run the rest of the file through sh.
+-----cut here-----cut here-----cut here-----cut here-----
+#!/bin/sh
+# shar:	Shell Archiver
+#	Run the following text with /bin/sh to create:
+#	midway/airstrike.c
+#	midway/etc.c
+#	midway/midway.c
+#	midway/movebombs.c
+#	midway/moveships.c
+#	midway/save.c
+#	midway/score.c
+#	midway/screen.c
+# This archive created: Wed Jan 23 19:00:04 1985
+cat << \SHAR_EOF > midway/airstrike.c
+char version[] = "%W%";
+
+#include "externs.h"
+
+airstrike()		/* launch computer searches, strikes, recover. */
+{
+	int enemy;
+	int send;
+	int type;
+	register int n;
+	struct squadron *planes;
+	char buf[36];
+
+	enemy = goodbogey(0);
+	for (n=0; n < MAXSHIPS; n++) {
+		if (n == JAPANESE) enemy = goodbogey(JAPANESE);
+		if (n != player && shiplist[n].hits && shiplist[n].torps) {
+			if (shiplist[n].type != CV || planesize(Japanese(n) ? japscouts : amscouts) < 7) {
+				if (shiplist[n].tbf) {
+					planes = catapult(n, 1, SCOUT);
+					planes -> course = rnd(8);
+				}
+			}
+
+			/* strike! */
+
+			if (shiplist[n].type == CV || shiplist[n].type == FT) {
+				if (enemy) {
+					if (!shiplist[n].launching) {
+						if (range(shiplist[enemy - 1].row, shiplist[enemy - 1].col, shiplist[n].row, shiplist[n].col) < Fuel[TBF]*5) {
+							shiplist[n].launching = 1;
+						}
+					}
+					switch (shiplist[n].launching++) {
+						case 0:
+						case 4:
+							shiplist[n].launching = 0;
+							send = 0;
+							break;
+						case 1:
+							if (shiplist[n].f4f > 10)
+								send = shiplist[n].f4f/2 + 1;
+							else
+								send = shiplist[n].f4f;
+							type = F4F;
+							break;
+						case 2:
+							if (shiplist[n].sbd > 20)
+								send = shiplist[n].sbd/2;
+							else
+								send = shiplist[n].sbd;
+							type = SBD;
+							break;
+						case 3:
+							if (shiplist[n].tbf > 15)
+								send = shiplist[n].tbf/2;
+							else
+								send = shiplist[n].tbf;
+							type = TBF;
+							break;
+					}
+					if (send) {
+						planes = catapult(n, send, type);
+						planes -> course = enemy - 1;
+						if (Japanese(n) == Japanese(player)) {
+							sprintf(buf, "%s launching planes", shiplist[n].name);
+							inform(buf, 0);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+newbogey(boat)
+int boat;
+{
+	register int n;
+	char buf[32];
+
+	if (!sighted[boat]) {
+		for (n = boat; n < MAXSHIPS && shiplist[n].flagship == boat; n++)
+			sighted[n] = 1;
+		if (Japanese(boat) == Japanese(player)) {
+			if (boat == shiplist[player].flagship)
+				inform("Enemy scout plane overhead!", 0);
+		} else {
+			sprintf(buf, "%s %s sighted", describe[shiplist[boat].type], shiplist[boat].name);
+			inform(buf, 0);
+			inform("@ %d, %d", boat + 1);
+		}
+	}
+}
+
+struct squadron *catapult(from, size, type)
+int from, size, type;
+{
+	register struct squadron *temp;
+
+	temp = (struct squadron *) calloc(1, sizeof(*temp));
+	if(!temp) {
+		perror("the first calloc in catapult");
+		kill(getpid(), 3);
+	}
+	if (Japanese(from)) {
+		if (type == SCOUT) {
+			if (japscouts) japscouts -> previous = temp;
+			temp -> s_next = japscouts;
+			japscouts = temp;
+			type = TBF;
+		} else {
+			if (japanese) japanese -> previous = temp;
+			temp -> s_next = japanese;
+			japanese = temp;
+		}
+	} else {
+		if (type == SCOUT) {
+			if (amscouts) amscouts -> previous = temp;
+			temp -> s_next = amscouts;
+			amscouts = temp;
+			type = TBF;
+		} else {
+			if (american) american -> previous = temp;
+			temp -> s_next = american;
+			american = temp;
+		}
+	}
+	temp -> row = shiplist[from].row;
+	temp -> col = shiplist[from].col;
+	temp -> from = from;
+	temp -> type = type;
+	temp -> planes = size;
+	temp -> fuel = Fuel[type];
+	
+	/* the rest zeros */
+
+	switch (type) {
+
+		case TBF:
+			shiplist[from].tbf -= size;
+			break;
+
+		case SBD:
+			shiplist[from].sbd -= size;
+			break;
+
+		case F4F:
+			shiplist[from].f4f -= size;
+			break;
+	}
+	return(temp);
+}
+
+goodbogey(ship)			/* finds best bogey ~ 20% type, 20% newness */
+int ship;			/* rest range */
+{
+	register int *table;
+	register int score, bestscore = -1;
+	register int jerry, best = 0;
+
+	table = Japanese(ship) ? amtable : japtable;
+	for (jerry = 0; table[jerry] < MAXSHIPS; jerry++) {
+		if (sighted[table[jerry]] && shiplist[table[jerry]].hits && shiplist[table[jerry]].torps) {
+			score = FT - shiplist[jerry].type;
+			if (score > bestscore) {
+				bestscore = score;
+				best = table[jerry] + 1;
+			}
+		}
+	}
+	return(best);
+}
+SHAR_EOF
+if test 3882 -ne "`wc -c midway/airstrike.c`"
+then
+echo shar: error transmitting midway/airstrike.c '(should have been 3882 characters)'
+fi
+cat << \SHAR_EOF > midway/etc.c
+#include "externs.h"
+
+angle(dr, dc)
+register int dr, dc;
+{
+	int add = 0, sub = 0;
+
+	if (dr <= 0 && dc < 0)
+		add = 180;
+	if (dr > 0 && dc < 0)
+		sub = 360;
+	if (dr < 0 && dc >= 0)
+		sub = 180;
+	if (abs(dc) > abs(dr) * 2.4)
+		return(sub ? sub - 90 : 90 + add);
+	else if (abs(dr) > abs(dc) * 2.4)
+		return(sub == 360 ? 0 : sub + add);
+	else
+		return(sub ? sub - 45 : 45 + add);
+}
+
+planesize(planes)
+register struct squadron *planes;
+{
+	register int n = 0;
+
+	for (; planes; planes = planes -> s_next)
+		n++;
+	return(n);
+}
+
+wreadstr(win, str)
+WINDOW *win;
+register char *str;
+{
+	register int n = 0;
+	register int ch;
+
+	while((ch = getchar()) != '\n') {
+		if (ch == '' && n > 0)
+			n--;
+		else if (ch == '')
+			continue;
+		else
+			str[n++] = ch;
+		waddch(win, ch);
+		wrefresh(win);
+	}
+	str[n] = '\0';
+}
+
+inform(fmt, jerry)
+char *fmt;
+int jerry;
+{
+	scroll++;
+	if (scroll > 11) scroll = 0;
+	wmove(notes, scroll, 0);
+	wclrtoeol(notes);
+	if (jerry) {
+		wprintw(notes, fmt, shiplist[jerry -1].row, shiplist[jerry -1].col);
+	} else
+		wprintw(notes, fmt);
+	wrefresh(notes);
+	if (automatic == -2)
+		automatic = 0;
+}
+
+char *daytime(time, buf)
+int time;
+register char buf[];
+{
+	float minutes;
+	int hours, mins, over = ZERODAY;
+	
+	minutes = time * 2.5 + ZEROMIN;
+	hours = minutes/60 + ZEROHOUR;
+	mins = (int) minutes % 60;
+	while (hours >= 24) {
+		hours -= 24;
+		over++;
+	}
+	sprintf(buf, "June %d %02d:%02d:00", over, hours, mins);
+	return(buf);
+}
+
+char shiphit(type, dir, row, col)	/* to see if a ship hit by a shell */
+register int type, dir, row, col;	/* shiphit(type, dir, hit.r - ship.r,*/
+{					/* hit.c - ship.c) != ' ' */
+
+	if (col >= -2 && col <= 2 && row >= -2 && row <= 2)
+		return(shapes[type - CV][dir][row+2][col+2]);
+	else
+		return(' ');
+}
+
+hit (ran, ar, ac, br, bc, dir, offset)	/* sees if a plane is hit */
+register int ran, ar, ac, br, bc, dir, offset;
+{
+	int dr, dc;
+
+	if (range(ar,ac,br,bc) < 5) {
+		vshape(dir, offset, &dr, &dc);
+		return(ar - br - dr <= ran && ar - br - dr >= -ran && ac - bc - dc <= ran && ac - bc - dc >= -ran);
+	} else
+		return(0);
+}
+
+vshape(dir, offset, dr, dc)
+int dir, offset, *dr, *dc;
+{
+	switch(dir/45) {
+
+		case 0:
+			*dr = offset < 0 ? -offset : offset;
+			*dc = offset;
+			break;
+
+		case 1:
+			*dr = offset < 0 ? 0 : offset;
+			*dc = offset > 0 ? 0 : offset;
+			break;
+		
+		case 2:
+			*dr = offset;
+			*dc = offset > 0 ? -offset : offset;
+			break;
+
+		case 3:
+			*dr = offset < 0 ? offset : 0;
+			*dc = offset < 0 ? 0 : -offset;
+			break;
+
+		case 4:
+			*dr = offset < 0 ? offset : -offset;
+			*dc = -offset;
+			break;
+
+		case 5:
+			*dr = offset < 0 ? 0 : -offset;
+			*dc = offset < 0 ? -offset : 0;
+			break;
+
+		case 6:
+			*dr = -offset;
+			*dc = offset < 0 ? -offset : offset;
+			break;
+
+		case 7:
+			*dr = offset < 0 ? -offset : 0;
+			*dc = offset < 0 ? 0 : offset;
+			break;
+	}
+}
+
+ditch(planes, head)
+register struct squadron *planes, **head;
+{
+	if (planes -> previous)
+		planes -> previous -> s_next = planes -> s_next;
+	else {
+		*head = planes -> s_next;
+	}
+	if (planes -> s_next)
+		planes -> s_next -> previous = planes -> previous;
+	cfree(planes);
+}
+
+range(ar, ac, br, bc)
+register int ar, ac, br, bc;
+{
+	ar -= br;
+	ac -= bc;
+	ar = abs(ar);
+	ac = abs(ac);
+	return(max(ar,ac));
+}
+SHAR_EOF
+if test 3222 -ne "`wc -c midway/etc.c`"
+then
+echo shar: error transmitting midway/etc.c '(should have been 3222 characters)'
+fi
+cat << \SHAR_EOF > midway/midway.c
+#include "globals.h"
+
+#define VAX
+
+main(argc)
+int argc;
+{
+	int pr, pc;
+	int interrupt();
+	register int n;
+	int vec[3];
+	int uid;
+
+	/* check the load */
+
+#ifndef VAX
+	uid = getuid();
+	wizard = uid == 25898 || uid == 25978;
+	gldav(vec);
+	if ((vec[2] >> 8) > 7 && !wizard)
+	{
+		fprintf(stderr, "Load average is too high.\n");
+		execl("/usr/public/wotd","/usr/public/wotd","-a",  0);
+		exit(1);
+	}
+#endif
+	
+	if (argc > 1) {
+		for (n=0; n < MAXSHIPS; n++)
+			if (shiplist[n].type == CV || shiplist[n].type == FT)
+				shiplist[n].f4f = shiplist[n].tbf = shiplist[n].sbd = 0;
+	}
+
+	/* lots of stuff */
+
+	/* Ken arnold stuff */
+
+	srand(getpid());
+	initscr();
+	view = newwin(24, 48, 0, 0);
+	leaveok(view, TRUE);
+	notes = newwin(12, 31, 0, 49);
+	hole = newwin(1, 1, 13, 48);
+	leaveok(hole, TRUE);
+	date = newwin(1, 15, 13, 60);
+	leaveok(date, TRUE);
+	panel1 = newwin(9, 1, 15, 48);
+	leaveok(panel1, TRUE);
+	panel2 = newwin(9, 1, 15, 54);
+	bridge = newwin(9, 5, 15, 49);
+	leaveok(bridge, TRUE);
+	stats = newwin(4, 24, 20, 55);
+	leaveok(stats, TRUE);
+	initialize();
+	signal(SIGINT, interrupt);
+	crmode();
+	noecho();
+
+	for (n=0; n < MAXSHIPS; n++) {		/* slightly random positions */
+		if (shiplist[n].flagship == n) {
+			if (!rnd(4)) {	/* 25% of the time */
+				pr = shiplist[MIDWAY].row - shiplist[n].row + rnd(3000) - 1500;	/* centered on MIDWAY */
+				pr = shiplist[MIDWAY].col - shiplist[n].col + rnd(3000) - 1500;	
+			} else {
+				pr = rnd(3000) - rnd(1500);	/* off centered on the ship's starting location */
+				pc = rnd(3000) - rnd(1500);
+			}
+		}
+		if (n != MIDWAY) {
+			shiplist[n].row += pr;
+			shiplist[n].col += pc;
+		}
+	}
+
+	sighted[MIDWAY] = 1;
+
+  	/* launch CAP */
+
+	for (n=0; n < MAXSHIPS; n++)
+		if (n != player && shiplist[n].f4f) {
+			capplanes[n] = shiplist[n].f4f/2;
+			shiplist[n].f4f -= capplanes[n];
+		}
+	
+	drawboard();
+	screen();
+	if (Japanese(player)) {
+		inform("Begin launching first wave", 0);
+		inform("of Midway attack. -- Nagumo", 0);
+	} else {
+		inform("Japanese fleet expected to", 0);
+		inform("be approx. 300 miles NW of", 0);
+		inform("Midway. -- Nimitz", 0);
+	}
+	playit();
+}
+
+playit()
+{
+
+	register int n;
+	int pr, pc;
+	int ran, tar;
+	int c;
+	char buf[32];
+
+	for (;;) {
+		switch (c = getchar()) {
+
+			case 'h':
+				flack(270, player);
+				wrefresh(view);
+				break;
+
+			case 'l':
+				flack(90, player);
+				wrefresh(view);
+				break;
+
+			case 'j':
+				flack(180, player);
+				wrefresh(view);
+				break;
+
+			case 'k':
+				flack(0, player);
+				wrefresh(view);
+				break;
+
+			case 'i':
+			case 'o':
+				flack(45, player);
+				wrefresh(view);
+				break;
+
+			case '.':
+			case ',':
+				flack(135, player);
+				wrefresh(view);
+				break;
+
+			case 'n':
+			case 'm':
+				flack(225, player);
+				wrefresh(view);
+				break;
+
+			case 'y':
+			case 'u':
+				flack(315, player);
+				wrefresh(view);
+				break;
+
+			case 'H':
+				shiplist[player].course = 270;
+				break;
+
+			case 'L':
+				shiplist[player].course = 90;
+				break;
+
+			case 'J':
+				shiplist[player].course = 180;
+				break;
+
+			case 'K':
+				shiplist[player].course = 0;
+				break;
+
+			case 'I':
+			case 'O':
+				shiplist[player].course = 45;
+				break;
+
+			case '>':
+			case '<':
+				shiplist[player].course = 135;
+				break;
+
+			case 'N':
+			case 'M':
+				shiplist[player].course = 225;
+				break;
+
+			case 'Y':
+			case 'U':
+				shiplist[player].course = 315;
+				break;
+
+			case '\n':
+				pc = Japanese(player) ? JAPANESE : MAXSHIPS;
+				ran = 35;	/* give player an advantage */
+				tar = -1;
+				for (n = (Japanese(player) ? 0 : JAPANESE); n < pc; n++) {
+					if (shiplist[n].hits && shiplist[n].torps && (pr = range(shiplist[player].row, shiplist[player].col, shiplist[n].row, shiplist[n].col)) < ran) {
+						ran = pr;
+						tar = n;
+					}
+				}
+				if (tar != -1) {
+					fireguns(player, tar);
+					wrefresh(view);
+				}
+				break;
+
+			case 'c':
+				launch(CAP);
+				break;
+
+			case '@':
+				launch(SUPER);
+				break;
+
+			case 'r':
+				launch(RECOVER);
+				break;
+
+			case 's':
+				launch(SCOUT);
+				break;
+
+			case 't':
+				launch(TBF);
+				break;
+
+			case 'f':
+				launch(F4F);
+				break;
+
+			case 'b':
+				launch(SBD);
+				break;
+
+			case 'w':
+				inform("waiting...", 0);
+				automatic = -2;
+				break;
+
+			case 'A':
+				inform("Rig for silent running? ", 0);
+				wreadstr(notes, buf);
+				if (*buf == 'y')
+					automatic = -1;
+				break;
+
+			case 'a':
+				automatic = 1;
+				break;
+			
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				scale = c - '0';
+				virtual = player;
+				break;
+
+			case 'S':
+				inform("Scan whom? ",0);
+				wreadstr(notes, buf);
+				if ((n = scanwho(buf)) != -1) {
+					scale = 0;
+					virtual = n;
+				}
+				break;
+
+			case '\f':
+				redraw();
+				break;
+
+			case 'q':
+				inform("Really quit? ", 0);
+				wreadstr(notes, buf);
+				if (*buf == 'y')
+					die();
+				break;
+		}
+		do {
+			clock++;
+			airstrike();
+			moveships();
+			movebombs();
+			if (automatic >= 0)
+				screen();
+		} while (automatic);
+	}
+}
+
+drawboard()
+{
+	register int n, k;
+
+	clear();
+	for (n=0; n < 15; n++)
+		mvaddch(n, 48, '|');
+	for (k=12; k < 15; k += 2)
+		for (n=49; n < COLS; n++)
+			mvaddch(k, n, '-');
+	mvaddstr(13, 50, shiplist[player].name);
+	mvaddstr(13, 76, "1942");
+	mvprintw(15, 55, "%s %ld tons", describe[shiplist[player].type], (long) shiplist[player].value * 1000L);
+	mvaddstr(17, 55, "Guns:");
+	mvaddstr(18, 55, "Armor:");
+	mvwputs(stats, 0, 0, "CAP");
+	if (Japanese(player)) {
+		mvwputs(stats, 1, 0, "00F");
+		mvwputs(stats, 2, 0, "97T");
+		mvwputs(stats, 3, 0, "97B");
+	} else {
+		mvwputs(stats, 1, 0, "F4F");
+		mvwputs(stats, 2, 0, "TBF");
+		mvwputs(stats, 3, 0, "SBD");
+	}
+	mvwputs(stats, 0, 8, "Hits");
+	mvwputs(stats, 1, 8, "Torps");
+	mvwputs(stats, 3, 8, "Score");
+	mvwputs(stats, 0, 18, "Row");
+	mvwputs(stats, 2, 18, "Col");
+	move(17, 61);
+	if (shiplist[player].turrets)
+		printw("%d %d\", ", shiplist[player].turrets, shiplist[player].calibre);
+	printw("%d 5\" AA", shiplist[player].aa);
+	move(18, 62);
+	if (!shiplist[player].belt && !shiplist[player].deck)
+		addstr("none");
+	else
+		printw("%d\" belt, %d\" deck", shiplist[player].belt, shiplist[player].deck);
+	refresh();
+	wrefresh(stats);
+}
+
+initialize()
+{
+	int c, s;
+	char r[20];
+	register int n;
+	char **mess;
+	int *table;
+
+	printf("Choose a side (Japanese or American) ? ");
+	gets(r);
+	if (*r == 'J' || *r == 'j') {
+		mess = jmess;
+		table = japtable;
+	} else {
+		mess = amess;
+		table = amtable;
+	}
+	for (n=0; mess[n]; n++)
+		puts(mess[n]);
+	printf("\nWhich force do you like? ");
+	scanf("%d", &c);
+	printf("\n");
+	for (n = table[c]; shiplist[n].flagship == table[c]; n++)
+		printf("%d) %s %s (%d Kilotons)\n", n - table[c], describe[shiplist[n].type], shiplist[n].name, shiplist[n].value);
+	printf("\nWhich ship do you like? ");
+	scanf("%d", &s);
+	if ((virtual = player = s + table[c]) >= MAXSHIPS || player < 0) {
+		fprintf(stderr, "Ship not found.\n");
+		exit(1);
+	}
+}
+scanwho(buf)
+char buf[];
+{
+	register int n;
+
+	for (n=0; n < MAXSHIPS; n++)
+		if ((sighted[n] || (Japanese(player) == Japanese(n))) && !strcmp(buf, shiplist[n].name) && shiplist[n].hits && shiplist[n].torps)
+			break;
+	if (n < MAXSHIPS) {
+		return(n);
+	} else {
+		inform("Ship not found.", 0);
+		return(-1);
+	}
+}
+SHAR_EOF
+if test 7239 -ne "`wc -c midway/midway.c`"
+then
+echo shar: error transmitting midway/midway.c '(should have been 7239 characters)'
+fi
+cat << \SHAR_EOF > midway/movebombs.c
+#include "externs.h"
+
+movebombs()
+{
+	cleanfish(amfish, 1);	/* get rid of old fish and move live ones */
+	cleanfish(japfish, 0);
+	movefish(amfish, 1);
+	movefish(japfish, 0);
+}
+
+movefish(torp, yank)
+register struct torpedo *torp;
+int yank;
+{
+	register int n;
+	int start, stop;
+	char buf[32];
+
+	if (yank) {
+		start = JAPANESE;
+		stop = MAXSHIPS;
+	} else {
+		start = 0;
+		stop = JAPANESE;
+	}
+	for (; torp; torp = torp -> next_torp) {
+		for (n = start; n < stop; n++) {
+			if (shiplist[n].hits && shiplist[n].torps && shiphit(shiplist[n].type, shiplist[n].course/45, torp -> row - shiplist[n].row, torp -> col - shiplist[n].col) != ' ') {
+				sprintf(buf, "%s torpedoed.", shiplist[n].name);
+				inform(buf, 0);
+				plotsplash(torp -> row, torp -> col, '#');
+				torp -> timeleft = 1;
+				if (!--shiplist[n].torps) {
+					sprintf(buf, "%s sinking!", shiplist[n].name);
+					inform(buf, 0);
+					shiplist[torp -> fromship].points += shiplist[n].value;
+					if (shiplist[n].flagship == n)
+						transferflag(n);
+					else if (n == player)
+						die();
+					break;
+				}
+			}
+		}
+	}
+}
+
+cleanfish(fish, yank)
+register struct torpedo *fish;
+int yank;
+{
+	struct torpedo *thud;
+
+	thud = fish;
+	for (; fish; fish = fish -> next_torp) {
+		if (!--fish -> timeleft) {
+			if (yank && thud == amfish) {
+				thud = amfish = fish -> next_torp;
+			} else if (!yank && thud == japfish) {
+				thud = japfish = fish -> next_torp;
+			} else {
+				thud -> next_torp = fish -> next_torp;
+			}
+			cfree(fish);
+		} else {
+			thud = fish;
+			drdc(fish -> course, &fish -> row, &fish -> col);
+			drdc(fish -> course, &fish -> row, &fish -> col);
+			plotsplash(fish -> row, fish -> col, '.');
+		}
+	}
+}
+
+plotsplash(row, col, symbol)
+register int row, col;
+register char symbol;
+{
+	if (scale == 0) {
+		row -= viewrow;
+		col -= viewcol;
+		if (row >= 0 && row < MAXROWS && col >= 0 && col < MAXCOLS)
+			mvwaddch(view, row, col, symbol);
+	}
+}
+
+transferflag(from)
+int from;
+{
+	register int n;
+	int new;
+	char buf[5];
+
+	if (from == player) {
+		inform("Your ship was sunk.",0);
+		inform("Attempt to transfer flag? ", 0);
+		wreadstr(notes, buf);
+		if (*buf == 'n')
+			die();
+	}
+	new = from + 1;
+	while (new < MAXSHIPS && (!shiplist[new].torps || !shiplist[new].hits) && shiplist[new].flagship == from)
+		new++;
+	if (new == MAXSHIPS || shiplist[new].flagship != from) {
+		if (from == player) die();
+	} else {
+		for (n = from; shiplist[n].flagship == from; n++)
+			shiplist[n].flagship = new;
+		if (Japanese(from)) {
+			for (n=0; japtable[n] != from; n++);
+			japtable[n] = new;
+		} else {
+			for (n=0; amtable[n] != from; n++);
+			amtable[n] = new;
+		}
+		if (from == player) {
+			player = virtual = new;
+			redraw();
+		}
+	}
+}
+
+redraw()
+{
+	werase(notes);
+	werase(hole);
+	werase(panel1);
+	werase(panel2);
+	werase(date);
+	werase(stats);
+	drawboard();
+}
+
+flack(dir, from)
+int dir, from;
+{
+	register struct squadron *planes, *target;
+	register int n, r, c, k, l;
+	int row = 0, col = 0, head; 
+	int gothim;
+	char buf[32];
+
+	if (!firedflack[from] && shiplist[from].hits && shiplist[from].torps) {
+		firedflack[from] = 1;
+		if (Japanese(from)) {
+			planes = american;
+			head = 0;
+		} else {
+			planes = japanese;
+			head = JAPANESE;
+		}
+		drdc(dir, &row, &col);
+		row *= 7;
+		col *= 7;			/* ack_ack range */
+		row += shiplist[from].row;
+		col += shiplist[from].col;
+		for (n=0; n < shiplist[from].ack_ack; n++) {
+			gothim = 0;
+			r = row + rnd(7) - 3;
+			c = col + rnd(7) - 3;
+			for (target = planes; target; target = target -> s_next) {
+				if (range(target -> row, target -> col, r, c) < 10) {
+					for (k = -(l=target -> planes)/2; k < l - l/2; k++) {
+						if (hit(1, r, c, target -> row, target -> col, setcourse(target, target -> course), k)) {
+							target -> planes -= rnd(3);
+							gothim = 1;
+							break;
+						}
+					}
+					if (target -> planes <= 0)
+						if (head)
+							ditch(target, &japanese);
+						else
+							ditch(target, &american);
+				}
+			}
+			if (gothim)
+				plotsplash(r, c, '@');
+			else
+				plotsplash(r, c, '*');
+		}
+	
+	}
+}
+
+fireguns(from, to)
+int from, to;
+{
+	register int k, ran, r, c;
+	int row, col;
+	char buf[32];
+
+	if (!firedguns[from] && shiplist[from].hits && shiplist[from].torps && shiplist[to].hits) {
+		firedguns[from] = 1;
+		r = shiplist[to].row;
+		c = shiplist[to].col;
+		ran = range(shiplist[from].row, shiplist[from].col, r, c);
+		for (k=0; k < shiplist[from].guns; k++) {
+			row = r + rnd(ran/2) - ran/4;
+			col = c + rnd(ran/2) - ran/4;
+			if (shiphit(shiplist[to].type, shiplist[to].course/45, row - r, col - c) != ' ') { 
+				sprintf(buf, "%s shelled by %s.", shiplist[to].name, shiplist[from].name);
+				inform(buf, 0);
+				plotsplash(row, col, '#');
+				if (--shiplist[to].hits <= 0) {
+					shiplist[to].hits = 0;
+					sprintf(buf, "%s sinking!", shiplist[to].name);
+					inform(buf, 0);
+					shiplist[from].points += shiplist[to].value;
+					if (shiplist[to].flagship == to)
+						transferflag(to);
+					else if (to == player)
+						die();
+					break;
+				}
+			} else
+				plotsplash(row, col, '^');
+		}
+	}
+}
+
+launch(type)
+int type;
+{
+	int num, course;
+	char buf[10];
+	struct squadron *planes;
+
+	switch (type) {
+
+		case CAP:
+			if (shiplist[player].f4f || capplanes[player]) {
+				inform("Combat Air Patrol: ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &num);
+				if (num < 0) num = -num;
+				if (num <= capplanes[player] + shiplist[player].f4f) {
+					shiplist[player].f4f -= num - capplanes[player];
+					capplanes[player] = num;
+				} else {
+					capplanes[player] += shiplist[player].f4f;
+					shiplist[player].f4f = 0;
+				}
+			}
+			break;
+
+		case SCOUT:
+			if (shiplist[player].tbf) {
+				inform("Launching Scout Plane",0);
+				inform("   Course? ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &course);
+				planes = catapult(player, 1, SCOUT);
+				planes -> course = course/45;
+			}
+			break;
+			
+		case RECOVER:
+			inform("Break Radio Silence? ", 0);
+			wreadstr(notes, buf);
+			if (*buf == 'y') {
+				inform("Signalling all planes.", 0);
+				for (planes = (Japanese(player) ? japanese : american); planes; planes = planes -> s_next) {
+					if (planes -> from == player) {
+						planes -> attack = -1;
+						planes -> course = player;
+						planes -> fuel = range(planes -> row, planes -> col, shiplist[player].row, shiplist[player].col) / 10;
+					}
+				}
+				for (planes = (Japanese(player) ? japscouts : amscouts); planes; planes = planes -> s_next) {
+					if (planes -> from == player) {
+						planes -> attack = -1;
+						planes -> course = setcourse(planes, player);
+						planes -> fuel = range(planes -> row, planes -> col, shiplist[player].row, shiplist[player].col) / 10;
+					}
+				}
+				sighted[player] = 1;
+			}
+			break;
+
+		case SUPER:
+			if (shiplist[player].tbf) {
+				inform("Launching Random Scouts", 0);
+				inform("   How many planes? ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &num);
+				if (num < 0) num = -num;
+				if (num) {
+					if (num > shiplist[player].tbf)
+						num = shiplist[player].tbf;
+					for (course = 0; course < num; course++) {
+						planes = catapult(player, 1, SCOUT);
+						planes -> course = 8;
+					}
+				}
+			}
+			break;
+
+		case TBF:
+			if (shiplist[player].tbf) {
+				inform("Launching Torpedo Bombers", 0);
+				inform("   How many planes? ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &num);
+				if (num < 0) num = -num;
+				if (num) {
+					if (num > shiplist[player].tbf)
+						num = shiplist[player].tbf;
+					inform("   Target? ", 0);
+					wreadstr(notes, buf);
+					if ((course = scanwho(buf)) != -1) {
+						planes = catapult(player, num, TBF);
+						planes -> course = course;
+						if (Japanese(player)){
+							putchar('\7');
+							inform("Banzai!", 0);
+						}
+					}
+				}
+			} 
+			break;
+
+		case SBD:
+			if (shiplist[player].sbd) {
+				inform("Launching Dive Bombers", 0);
+				inform("   How many planes? ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &num);
+				if (num < 0) num = -num;
+				if (num) {
+					if (num > shiplist[player].sbd)
+						num = shiplist[player].sbd;
+					inform("   Target? ", 0);
+					wreadstr(notes, buf);
+					if ((course = scanwho(buf)) != -1) {
+						planes = catapult(player, num, SBD);
+						planes -> course = course;
+						if (Japanese(player)){
+							putchar('\7');
+							inform("Banzai!", 0);
+						}
+					}
+				}
+			} 
+			break;
+		case F4F:
+			if (shiplist[player].f4f) {
+				inform("Launching Fighters", 0);
+				inform("   How many planes? ", 0);
+				wreadstr(notes, buf);
+				sscanf(buf, "%d", &num);
+				if (num < 0) num = -num;
+				if (num) {
+					if (num > shiplist[player].f4f)
+						num = shiplist[player].f4f;
+					inform("   Target? ", 0);
+					wreadstr(notes, buf);
+					if ((course = scanwho(buf)) != -1) {
+						planes = catapult(player, num, F4F);
+						planes -> course = course;
+						if (Japanese(player)){
+							putchar('\7');
+							inform("Banzai!", 0);
+						}
+					}
+				}
+			} 
+			break;
+	} /* end switch */
+} /* end launch */
+SHAR_EOF
+if test 8911 -ne "`wc -c midway/movebombs.c`"
+then
+echo shar: error transmitting midway/movebombs.c '(should have been 8911 characters)'
+fi
+cat << \SHAR_EOF > midway/moveships.c
+#include "externs.h"
+
+moveships()
+{
+   register int n,i,p;
+   int target;
+
+   if (target = goodbogey(0))
+      for (n=0; amtable[n] < MAXSHIPS; n++)
+         if (amtable[n] != player)
+            shiplist[amtable[n]].course = intercept(amtable[n], target -1);
+   if (target = goodbogey(JAPANESE))
+      for (n=0; japtable[n] < MAXSHIPS; n++)
+         if (japtable[n] != player)
+            shiplist[japtable[n]].course = intercept(japtable[n], target -1);
+   for (n=0; n < MAXSHIPS; n++) {
+      firedflack[n] = 0;
+      firedguns[n] = 0;
+      if (shiplist[n].torps && shiplist[n].hits && n != player && n != MIDWAY)
+         drdc((shiplist[n].course = shiplist[shiplist[n].flagship].course), &shiplist[n].row, &shiplist[n].col);
+   }
+   if (player != MIDWAY)
+      drdc(shiplist[player].course, &shiplist[player].row, &shiplist[player].col);
+   if (automatic >= 0)
+	   plotships();
+
+   for (n=0; amtable[n] < MAXSHIPS; n++) {
+      if (shiplist[amtable[n]].hits && shiplist[amtable[n]].torps) {
+         for (i = 0; japtable[i] < MAXSHIPS; i++) {
+            if (shiplist[japtable[i]].hits && shiplist[japtable[i]].torps) {
+               if (range(shiplist[amtable[n]].row, shiplist[amtable[n]].col, shiplist[japtable[i]].row, shiplist[japtable[i]].col) < 25) {   /* within sight */
+                  for (p=japtable[i]; p < MAXSHIPS && shiplist[p].flagship == japtable[i]; p++)
+                     if (p != player)
+                        fireguns(p, amtable[n]);
+                  for (p=amtable[n]; p < MAXSHIPS && shiplist[p].flagship == amtable[n]; p++)
+                     if (p != player)
+                        fireguns(p, japtable[i]);
+                  newbogey(japtable[i]);
+                  newbogey(amtable[n]);
+               }
+            }
+         }
+      }
+   }
+   fly(american,0,1);
+   fly(japanese,0,0);
+   fly(amscouts,1,1);
+   fly(japscouts,1,0);
+   if (automatic >= 0)
+	   plotplanes();
+   steer(american,0,1);
+   steer(japanese,0,0);
+   steer(amscouts,1,1);
+   steer(japscouts,1,0);
+}
+
+fly(planes, scout, yank)
+register struct squadron *planes;
+int scout, yank;
+{
+   register int n;
+   int speed;
+   char buf[32];
+   int dr, dc;
+
+   for (; planes; planes = planes -> s_next) {
+      speed = scout ? 15 : 10;
+      if (planes -> attack > 0) speed = 3;
+      dr = dc = 0;
+      if (scout)
+         drdc(planes -> course, &dr, &dc);
+      else
+         drdc(setcourse(planes, planes -> course), &dr, &dc);
+      planes -> row += dr * speed;
+      planes -> col += dc * speed;
+      if (planes -> fuel-- <= 0) {
+         switch (planes -> type) {
+            case F4F:
+               shiplist[planes -> from].f4f += planes -> planes;
+               break;
+            case SBD:
+               shiplist[planes -> from].sbd += planes -> planes;
+               break;
+            case TBF:
+               shiplist[planes -> from].tbf += planes -> planes;
+               break;
+         }
+         if (planes -> from == player) {
+            sprintf(buf, "Recovering %d %s", planes -> planes, describe[planes -> type]);
+            inform(buf, 0);
+         }
+         if (yank)
+            if (scout)
+               ditch(planes, &amscouts);
+            else
+               ditch(planes, &american);
+         else
+            if (scout)
+               ditch(planes, &japscouts);
+            else
+               ditch(planes, &japanese);
+      }
+   }
+}
+
+steer(planes, scout, yank)
+register struct squadron *planes;
+int scout, yank;
+{
+   register int p, k, n, s;
+   int *table;
+   char buf[32];
+   int ran;
+   struct torpedo *torp;
+
+   for (; planes; planes = planes -> s_next) {
+      table = yank ? japtable : amtable;
+      for (k=0; table[k] < MAXSHIPS; k++) {
+         if (shiplist[table[k]].hits && shiplist[table[k]].torps) {
+            if ((ran = range(planes -> row, planes -> col, shiplist[table[k]].row, shiplist[table[k]].col)) < (scout ? 50 : 30)) {
+               newbogey(table[k]);
+               if (!scout && planes -> attack >= 0 && table[k] == shiplist[planes -> course].flagship) {
+                  if (!planes -> attack) {
+                     planes -> attack = 1;
+                     sprintf(buf, "%s under attack", shiplist[table[k]].name);
+                     inform(buf, 0);
+                     for (p=table[k]; p < MAXSHIPS && shiplist[p].flagship == table[k]; p++)
+                        sendcap(planes, p);
+                  }
+                  s = planes -> course = table[k];
+                  if (s != player)
+                     flack(aimflack(s, planes), s);
+                  for (p=s+1; p < MAXSHIPS && shiplist[p].flagship == s; p++)
+                     if (p != player)
+                        if (rnd(2))
+                           flack(aimflack(p, planes), p);
+                        else
+                           flack(intercept(p,s),p);
+                  if (planes -> type == TBF) {
+                     if (ran < 7) {
+                        planes -> attack = -1;
+                        for (n=0; n < planes -> planes; n++) {
+                           if (!(torp = (struct torpedo *) calloc(1, sizeof(struct torpedo)))){
+                              perror("calloc");
+                              exit(1);
+                           }
+                           torp -> next_torp = yank ? amfish : japfish;
+                           if (yank) amfish = torp;
+                           else japfish = torp;
+                           vshape(setcourse(planes, s), n - planes -> planes / 2, &torp -> row, &torp ->col);
+                           torp -> row += planes -> row + rnd(3) - 1;
+                           torp -> col += planes -> col + rnd(3) - 1;
+                           torp -> fromship = planes -> from;
+                           torp -> timeleft = 4 + rnd(12);
+		           torp -> course = setcourse(planes, s);
+                           if (!rnd(10))
+                              torp -> course += rnd(5) -2;  /* a few duds */
+                           planes -> course = planes -> from;
+                           planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+                        }
+                     }
+                  } else if (ran < 4) {
+                     planes -> attack = -1;
+                     planes -> course = planes -> from;
+                     planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+                     if (planes -> type == SBD) {
+                        for (n=0; n < planes -> planes; n++) {
+                           if (rnd(2)) {
+                              sprintf(buf, "%s bombed.", shiplist[s].name);
+                              inform(buf, 0);
+                              shiplist[s].hits--;
+                              shiplist[s].f4f -= shiplist[s].f4f/3;
+                              shiplist[s].tbf -= shiplist[s].tbf/3;
+                              shiplist[s].sbd -= shiplist[s].sbd/3;
+                           }
+                        }
+                        plotsplash(shiplist[s].row, shiplist[s].col, '#');
+                        if (shiplist[s].hits <= 0) {
+                           shiplist[s].hits = 0;
+                           sprintf(buf, "%s sinking!", shiplist[s].name);
+                           inform(buf, 0);
+                           shiplist[planes -> from].points += shiplist[s].value;
+                           if (shiplist[s].flagship == s)
+                              transferflag(s);
+                           else if (s == player)
+                              die();
+                           break;
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      if (!planes -> attack && planes -> fuel <= Fuel[planes -> type]/2) {
+         planes -> attack = -1;   /* return home */
+         if (scout) planes -> course = setcourse(planes, planes -> from);
+         else
+            planes -> course = planes -> from;
+      }
+      if (!scout && (!shiplist[planes -> course].hits || !shiplist[planes -> course].torps)) {
+         if (planes -> course == planes -> from) {
+            if (!Japanese(planes -> from))
+               planes -> course = planes -> from = MIDWAY;
+            else
+               planes -> course = planes -> from = 22;   /* the Hiryu */
+         } else {
+            if (shiplist[shiplist[planes -> course].flagship].hits && shiplist[shiplist[planes -> course].flagship].torps) {
+               planes -> course = shiplist[planes -> course].flagship;
+            } else {
+               planes -> course = planes -> from;
+               planes -> attack = -1;
+               planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+            }
+         }
+      }
+   }
+}
+
+drdc(dir, dr, dc)
+register int dir, *dr, *dc;
+{
+   switch (dir) {
+
+      case 0:
+         *dr -= 1;
+         break;
+
+      case 1:
+      case 45:
+         *dr -= 1;
+         *dc += 1;
+         break;
+
+      case 2:
+      case 90:
+         *dc += 1;
+         break;
+
+      case 3:
+      case 135:
+         *dr += 1;
+         *dc += 1;
+         break;
+
+      case 4:
+      case 180:
+         *dr += 1;
+         break;
+
+      case 5:
+      case 225:
+         *dr += 1;
+         *dc -= 1;
+         break;
+
+      case 6:
+      case 270:
+         *dc -= 1;
+         break;
+
+      case 7:
+      case 315:
+         *dr -= 1;
+         *dc -= 1;
+         break;
+
+      default:
+         *dr += rnd(3) - 1;
+         *dc += rnd(3) - 1;
+         break;
+   }
+}
+
+sendcap(enemy, from)
+struct squadron *enemy;
+int from;
+{
+   int killed;
+   char buf[32];
+
+   if (shiplist[from].hits && shiplist[from].torps && capplanes[from]) {
+      sprintf(buf, "%s CAP intercepting", shiplist[from].name);
+      inform(buf, 0);
+      switch (enemy -> type) {
+         
+         case F4F:
+            if (capplanes[from] > 2 * enemy -> planes) {
+               capplanes[from] -= (killed = enemy -> planes);
+               enemy -> planes = 0;
+            } else if (enemy -> planes > 2 * capplanes[from]) {
+               enemy -> planes -= (killed = capplanes[from]);
+               capplanes[from] = 0;
+            } else {
+               killed = min(capplanes[from], enemy -> planes);
+               capplanes[from] -= killed;
+               enemy -> planes -= killed;
+            }
+            break;
+
+         case SBD:
+            enemy -> planes -= (killed = capplanes[from] * 3 / 10);
+            break;
+
+         case TBF:
+            killed = capplanes[from] * 35 / 100;
+            capplanes[from] -= enemy -> planes * 15 / 100;
+            enemy -> planes -= killed;
+      }
+      if (killed > 0) {
+         sprintf(buf, "*** %d %s shot down", killed, describe[enemy -> type]);
+         inform(buf, 0);
+      }
+      if (enemy -> planes <= 0) {
+         if (Japanese(from))
+            ditch(enemy, &american);
+         else
+            ditch(enemy, &japanese);
+      }
+   }
+}
+SHAR_EOF
+if test 11020 -ne "`wc -c midway/moveships.c`"
+then
+echo shar: error transmitting midway/moveships.c '(should have been 11020 characters)'
+fi
+cat << \SHAR_EOF > midway/save.c
+/*
+ * save and restore routines
+ *
+ * @(#)save.c	3.5 (Berkeley) 4/16/81
+ */
+
+#include <curses.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <signal.h>
+
+typedef struct stat STAT;
+
+extern char version[];
+extern int wizard;
+extern WINDOW *notes;
+
+char *sbrk();
+
+STAT sbuf;
+char file_name[32];
+
+save_game()
+{
+    register int *savef;
+    char buf[80];
+
+    /*
+     * get file name
+     */
+	if (!*file_name)
+		strcpy(file_name, "midway.save");
+	sprintf(buf, "Save file (\"%s\")? ", file_name);
+	inform(buf, 0);
+	wreadstr(notes, buf);
+	if (*buf == 'y' || *buf == 'Y')
+	    goto gotfile;
+
+    do
+    {
+	inform("File name: ", 0);
+	wreadstr(notes, file_name);
+
+gotfile:
+	if ((savef = open(file_name, 1)) == NULL)
+	    inform("Bad file number.", 0); 
+    } while (savef == NULL);
+
+    /*
+     * write out encrpyted file (after a stat)
+     * The fwrite is to force allocation of the buffer before the write
+     */
+    save_file(savef);
+}
+
+/*
+ * write the saved game on the file
+ */
+save_file(savef)
+register FILE *savef;
+{
+    /*
+     * the fwrite of junk is to force the allocation of the stdio file
+     * buffer for savef before getting sbrk(0), so it will be right
+     */
+    write(savef, "junk", 5);
+    lseek(savef, 0L, 0);
+    fstat(savef, &sbuf);
+    write(savef, version, (unsigned) (sbrk(0) - version));
+    mvcur(0, COLS -1, LINES -1, 0);
+    echo();
+    nocrmode();
+    exit(0);
+}
+
+restore(file, envp)
+register char *file;
+char **envp;
+{
+    register int inf;
+    int interrupt();
+    char buf[80];
+    STAT sbuf2;
+
+    if ((inf = open(file, 0)) < 0)
+    {
+	perror(file);
+	exit(1);
+    }
+
+    fflush(stdout);
+    read(inf, buf, (unsigned) (strlen(version) + 1));
+    if (strcmp(buf, version) != 0)
+    {
+	printf("Sorry, saved game is out of date.\n");
+	exit(1);
+    }
+
+    fstat(inf, &sbuf2);
+    fflush(stdout);
+    if (brk(version + sbuf2.st_size) < 0)
+	perror("brk");
+    lseek(inf, 0L, 0);
+    read(inf, version, (unsigned) sbuf2.st_size);
+    /*
+     * we do not close the file so that we will have a hold of the
+     * inode for as long as possible
+     */
+
+    if (!wizard)
+	if (sbuf2.st_ino != sbuf.st_ino || sbuf2.st_dev != sbuf.st_dev)
+	{
+	    printf("Sorry, saved game is not in the same file.\n");
+	    exit(1);
+	}
+    /*
+     * defeat multiple restarting from the same place
+     */
+    if (!wizard)
+	if (sbuf2.st_nlink != 1)
+	{
+	    printf("Cannot restore from a linked file\n");
+	    exit(1);
+	}
+	else if (unlink(file) < 0)
+	{
+	    printf("Cannot unlink file\n");
+	    exit(1);
+	}
+
+    if (!My_term && isatty(2))
+    {
+	register char	*sp;
+
+	_tty_ch = 2;
+	gettmode();
+	if ((sp = getenv("TERM")) == NULL)
+	    sp = Def_term;
+	setterm(sp);
+    }
+    else
+	setterm(Def_term);
+    strcpy(file_name, file);
+    srand(getpid());
+    redraw();
+    inform("Game saved from", 0);
+    inform(ctime(&sbuf2.st_ctime), 0);
+    signal(SIGINT, interrupt);
+    crmode();
+    noecho();
+    playit();
+    /*NOTREACHED*/
+}
+SHAR_EOF
+if test 2952 -ne "`wc -c midway/save.c`"
+then
+echo shar: error transmitting midway/save.c '(should have been 2952 characters)'
+fi
+cat << \SHAR_EOF > midway/score.c
+#include <stdio.h>
+#include <pwd.h>
+#include "globals.h"
+
+#define LOGFILE "/usr/public/.midwaylog"
+
+int maxpoints[2] = {637, 384};
+struct logs {
+	int uid;
+	int fshipnum;
+	int netpoints;
+} log[20], zero;
+
+main()
+{
+	FILE *fp;
+	register int k, n;
+	struct passwd *getpwuid();
+	int score;
+	long st;
+	char buf[32];
+
+	if (fp = fopen(LOGFILE, "r+")){
+		n = fread(log, sizeof(struct logs), 20, fp);
+		rewind(fp);
+		printf("\n\nNAME\t\tSHIP\t\t\tTONS SUNK\tPERCENT\n\n");
+		for (k=0; k < 20; k++) {
+			st = (long) log[k].netpoints * 100L;
+			score = (int) (st / (long) maxpoints[(Japanese(log[k].fshipnum))]);
+			printf("%-10s%16s%20ld%10d%%\n", getpwuid(log[k].uid) -> pw_name, shiplist[log[k].fshipnum].name, log[k].netpoints * 1000L, score);
+			printf("\nSave? ");
+			scanf("%s", buf);
+			if (*buf == 'y') 
+				fwrite(log + k, sizeof(struct logs), 1, fp);
+			else {
+				printf("Removing...\n");
+				n--;
+			}
+		}
+		fwrite(&zero, sizeof(struct logs), 20 - n, fp);
+	}
+	fclose(fp);
+}
+SHAR_EOF
+if test 974 -ne "`wc -c midway/score.c`"
+then
+echo shar: error transmitting midway/score.c '(should have been 974 characters)'
+fi
+cat << \SHAR_EOF > midway/screen.c
+#include "externs.h"
+
+plotships()
+{
+	register int n, k, r, c;
+	int dr = 0, dc = 0;
+	int *table1, *table2, start1, start2, end1, end2;
+
+	viewrow = shiplist[virtual].row - HALFROW;
+	viewcol = shiplist[virtual].col - HALFCOL;
+	werase(view);
+	werase(bridge);
+	if (scale == 0) {
+		if (viewrow < 1018 && viewrow > 957 && viewcol > 952 && viewcol < 1057) {	/* land ho! */
+			for (n=0; n < 6; n++)
+				mvwputs(view, 981 + n - viewrow, 1012 - viewcol, Reef[n]);
+			for (n=0; n < 18; n++)
+				mvwputs(view, 1000 + n - viewrow, 1000 - viewcol, Sand_Island[n]);
+			for (n=0; n < 8; n++)
+				mvwputs(view, 1007 + n - viewrow, 1034 - viewcol, Eastern_Island[n]);
+		}
+		for (n = 0; n < MAXSHIPS; n++) {
+			if (shiplist[n].hits && shiplist[n].torps && (r = shiplist[n].row - viewrow) >= 0 && r < MAXROWS && (c = shiplist[n].col - viewcol) >= 0 && c < MAXCOLS) {
+				wmove(view, r, c);
+				if (n != MIDWAY && winch(view) == 'x') {
+					dr = dc = 0;
+					drdc(shiplist[n].course, &dr, &dc);
+					shiplist[n].row -= dr;
+					shiplist[n].col -= dc;
+				}
+				for (k=0; k < 5; k++)
+					mvwputs(view, r+k-2, c-2, shapes[shiplist[n].type - CV][shiplist[n].course/45][k]);
+			}
+		}
+	} else {
+		if (Japanese(player)) {
+			if (scale < 4) {
+				start1 = JAPANESE;
+				end1 = MAXSHIPS;
+				start2 = 0;
+				end2 = JAPANESE;
+			} else {
+				start1 = japtable[0];
+				end1 = MAXSHIPS;
+				start2 = amtable[0];
+				end2 = MAXSHIPS;
+			}
+			table1 = japtable;
+			table2 = amtable;
+		} else {
+			if (scale < 4) {
+				start1 = 0;
+				end1 = JAPANESE;
+				start2 = JAPANESE;
+				end2 = MAXSHIPS;
+			} else {
+				start1 = amtable[0];
+				end1 = MAXSHIPS;
+				start2 = japtable[0];
+				end2 = MAXSHIPS;
+			}
+			table1 = amtable;
+			table2 = japtable;
+		}
+		for (n = start1; n < end1; scale < 4 ? n++ : (n = *++table1)) {
+			if (shiplist[n].hits && shiplist[n].torps) {
+				r = (shiplist[n].row - viewrow - HALFROW) / scaler[scale] + HALFROW;
+				c = (shiplist[n].col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
+				if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
+					mvwputs(view, r, c, overviews[shiplist[n].type]);
+				}
+			}
+		}
+		for (n = start2; n < end2; scale < 4 ? n++ : (n = *++table2)) {
+			if (sighted[n] && shiplist[n].hits && shiplist[n].torps) {
+				r = (shiplist[n].row - viewrow - HALFROW) / scaler[scale] + HALFROW;
+				c = (shiplist[n].col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
+				if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
+					mvwputs(view, r, c, overviews[shiplist[n].type]);
+					mvwputs(view, r, c + 3, shiplist[n].name);
+				}
+			}
+		}
+	}
+	if (scale == 0 && virtual == player) {
+		for (n = 7; n < 16; n++) {
+			for (k = 21; k < 26; k++) {
+				wmove(view, n, k);
+				wmove(bridge, n - 7, k - 21);
+				waddch(bridge, winch(view));
+			}
+		}
+	} else {
+		for (k=0; k < 5; k++)
+			mvwputs(bridge, k+2, 0, shapes[shiplist[player].type - CV][shiplist[player].course/45][k]);
+	}
+}
+
+plotplanes()
+{
+	register int n, k, r, c;
+	int danger = 0;
+	int dr = 0, dc = 0;
+	struct squadron *planes;
+
+	if (scale == 0) {
+		for (planes = (Japanese(player) ? japscouts : amscouts); planes; planes = planes -> s_next)
+			if ((r = planes -> row - viewrow) >= 0 && r < MAXROWS && (c = planes -> col - viewcol) >= 0 && c < MAXCOLS)
+				mvwaddch(view, r, c, '?');
+		for (planes = japanese; planes; planes = planes -> s_next) {
+			if ((r = planes -> row - viewrow) >= 0 && r < MAXROWS && (c = planes -> col - viewcol) >= 0 && c < MAXCOLS) {
+				for (n = - (k = planes -> planes)/2; n < k - k/2; n++) {
+					dr = dc = 0;
+					vshape(setcourse(planes, planes -> course), n, &dr, &dc);
+					mvwaddch(view, r + dr, c + dc, '-');
+				}
+			}
+		}
+		for (planes = american; planes; planes = planes -> s_next) {
+			if ((r = planes -> row - viewrow) >= 0 && r < MAXROWS && (c = planes -> col - viewcol) >= 0 && c < MAXCOLS) {
+				for (n = - (k = planes -> planes)/2; n < k - k/2; n++) {
+					dr = dc = 0;
+					vshape(setcourse(planes, planes -> course), n, &dr, &dc);
+					mvwaddch(view, r + dr, c + dc, '+');
+				}
+			}
+		}
+	} else {
+		for (planes = (Japanese(player) ? japscouts : amscouts); planes; planes = planes -> s_next) {
+			r = (planes -> row - viewrow - HALFROW) / scaler[scale] + HALFROW;
+			c = (planes -> col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
+			if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
+				mvwaddch(view, r, c, '?');
+			}
+		}
+		for (planes = (Japanese(player) ? japanese : american); planes; planes = planes -> s_next) {
+			r = (planes -> row - viewrow - HALFROW) / scaler[scale] + HALFROW;
+			c = (planes -> col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
+			if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
+				mvwaddch(view, r, c, (Japanese(player) ? '-' : '+'));
+			}
+		}
+		for (planes = (Japanese(player) ? american : japanese); planes; planes = planes -> s_next) {
+			r = (planes -> row - viewrow - HALFROW) / scaler[scale] + HALFROW;
+			c = (planes -> col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
+			if ((scale < 4 || sighted[planes -> from]) && r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
+				mvwaddch(view, r, c, (Japanese(player) ? '+' : '-'));
+				if (planes -> course == player) danger = 1;
+			}
+		}
+	}
+	if (danger)
+		c = '?';
+	else
+		c = '|';
+	for (n=0; n < 9; n++) {
+		mvwaddch(panel1, n, 0, c);
+		mvwaddch(panel2, n, 0, c);
+	}
+}
+
+screen()
+{
+	char buf[32];
+
+	mvwputs(date, 0, 0, daytime(clock, buf));
+	mvwprintw(stats, 0, 4, "%2d", capplanes[virtual]);
+	mvwprintw(stats, 1, 4, "%2d", shiplist[virtual].f4f);
+	mvwprintw(stats, 2, 4, "%2d", shiplist[virtual].tbf);
+	mvwprintw(stats, 3, 4, "%2d", shiplist[virtual].sbd);
+	mvwprintw(stats, 0, 14, "%2d", shiplist[virtual].hits);
+	mvwprintw(stats, 1, 14, "%2d", shiplist[virtual].torps);
+	mvwprintw(stats, 3, 14, "%-3d", shiplist[virtual].points);
+	mvwprintw(stats, 1, 18, "%-6d", shiplist[virtual].row);
+	mvwprintw(stats, 3, 18, "%-6d", shiplist[virtual].col);
+	mvwaddch(hole, 0, 0, scale + '0');
+	wrefresh(view);
+	wrefresh(bridge);
+	wrefresh(stats);
+	wrefresh(date);
+	wrefresh(hole);
+	wrefresh(panel1);
+	wrefresh(panel2);
+} /*end screen */
+
+#include <pwd.h>
+#define LOGFILE "/usr/public/.midwaylog"
+int maxpoints[2] = {637, 384};
+struct logs {
+	int uid;
+	int fshipnum;
+	int netpoints;
+};
+
+die()
+{
+	FILE *fp;
+	register int n, k;
+	struct passwd *getpwuid();
+	int score;
+	long st;
+	struct logs log[20], temp;
+
+	if (!shiplist[player].hits || !shiplist[player].torps)
+		inform("You went down with the ship!", 0);
+	mvcur(0, COLS-1, LINES-1, 0);
+	echo();
+	nocrmode();
+
+	signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
+
+	if (fp = fopen(LOGFILE, "r+")){
+		n = fread(log, sizeof(struct logs), 20, fp);
+		for (; n < 20; n++)
+			log[n].uid = log[n].fshipnum = log[n].netpoints = 0;
+		rewind(fp);
+		for (n=0; n < 20; n++)
+			if (shiplist[player].points > log[n].netpoints){
+				fwrite(log, sizeof(struct logs), n, fp);
+				temp.uid = getuid();
+				temp.fshipnum = player;
+				temp.netpoints = shiplist[player].points;
+				fwrite(&temp, sizeof(struct logs), 1, fp);
+				fwrite(log + n, sizeof(struct logs), 19 - n, fp);
+				break;
+			}
+		printf("\n\nNAME\t\tSHIP\t\t\tTONS SUNK\tPERCENT\n\n");
+		if (n == 21) n = 20;
+		for (k=0; k < n; k++) {
+			if (log[k].netpoints) {
+				st = (long) log[k].netpoints * 100L;
+				score = (int) (st / (long) maxpoints[(Japanese(log[k].fshipnum))]);
+				printf("%-10s%16s%20ld%10d%%\n", getpwuid(log[k].uid) -> pw_name, shiplist[log[k].fshipnum].name, log[k].netpoints * 1000L, score);
+			}
+		}
+		if (shiplist[player].points) {
+			st = (long) temp.netpoints * 100L;
+			score = (int) (st / (long) maxpoints[(Japanese(temp.fshipnum))]);
+			printf("%-10s%16s%20ld%10d%%\n", getpwuid(temp.uid) -> pw_name, shiplist[temp.fshipnum].name, temp.netpoints * 1000L, score);
+		}
+		for (; k < 20; k++) {
+			if (log[k].netpoints) {
+				st = (long) log[k].netpoints * 100L;
+				score = (int) (st / (long) maxpoints[(Japanese(log[k].fshipnum))]);
+				printf("%-10s%16s%20ld%10d%%\n", getpwuid(log[k].uid) -> pw_name, shiplist[log[k].fshipnum].name, log[k].netpoints * 1000L, score);
+			}
+		}
+
+	}
+	exit(0);
+}
+
+interrupt()
+{
+	automatic = 0;
+	signal(SIGINT, interrupt);
+}
+
+mvwputs(win, row, col, string)
+WINDOW *win;
+register int row, col;
+register char *string;
+{
+	register int n;
+
+	for (n=0; string[n]; n++)
+		if (row >= 0 && row < win -> _maxy && col+n >= 0 && col+n < win -> _maxx)
+			mvwaddch(win, row, col + n, string[n]);
+}
+SHAR_EOF
+if test 8339 -ne "`wc -c midway/screen.c`"
+then
+echo shar: error transmitting midway/screen.c '(should have been 8339 characters)'
+fi
+#	End of shell archive
+exit 0
