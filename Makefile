@@ -1,44 +1,35 @@
 # Leave in the -O blast you!
 
-CC= cc
 CFLAGS= -O
+LDLIBS= -lncurses
 FILES= airstrike.c etc.c midway.c movebombs.c moveships.c screen.c
 OBJS= airstrike.o etc.o midway.o movebombs.o moveships.o screen.o
-OTHERFILES= makefile externs.h globals.h Midway.doc
-JUNKFILES= Midway fluff junk arch tags
-LIBS= -lcurses -ltermlib 
+PROG= midway
+JUNKFILES= ${PROG} fluff junk tags
 PUB= /usr/public
 
-.c.o:; ${CC} ${CFLAGS} -c $<
+all: ${PROG}
 
-Midway: ${OBJS}
-	cc ${OBJS} ${CFLAGS} ${LIBS} -o Midway
-
-Cory: ${OBJS}
-	cc ${OBJS} ${CFLAGS} ${LIBS} -i -o Cory
+${PROG}: ${OBJS}
+	${CC} ${OBJS} -o ${PROG} ${LDLIBS}
 
 ${OBJS}: externs.h
 
 midway.o: globals.h
 
-arch:
-	ar uv MID.a ${FILES} ${OTHERFILES} 
-	touch arch
+install: ${PUB}/${PROG} ${PUB}/${PROG}.txt
 
-profile: ${OBJS}
-	cc -p -i ${OBJS} ${CFLAGS} ${LIBS} -o Midway.pro
+${PUB}/${PROG}: ${PROG}
+	cp ${PROG} ${PUB}
+	chmod 755 ${PUB}/${PROG}
+	cp /dev/null ${PUB}/${PROG}.log
+	chmod 666 ${PUB}/${PROG}.log
 
-install: ${PUB}/Midway ${PUB}/Midway.doc
-${PUB}/Midway: Midway
-	strip Midway
-	cp Midway ${PUB}/Midway
-	chmod 755 ${PUB}/Midway
-	cp /dev/null ${PUB}/.midwaylog
-	chmod 666 ${PUB}/.midwaylog
-${PUB}/Midway.doc: Midway.doc
-	cp Midway.doc ${PUB}/Midway.doc
-	chmod 644 ${PUB}/Midway.doc
+${PUB}/${PROG}.txt: README
+	cp README ${PUB}/${PROG}.txt
+	chmod 644 ${PUB}/${PROG}.txt
 
-clean: arch
-	rm -f ${OBJS} ${FILES} ${OTHERFILES} ${JUNKFILES}
-	pack MID.a
+clean:
+	${RM} ${OBJS} ${JUNKFILES}
+
+.PHONY: all install clean
