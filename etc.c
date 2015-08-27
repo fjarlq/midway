@@ -136,6 +136,9 @@ void vshape(int dir, int offset, int *dr, int *dc)
 
 void ditch(struct squadron *planes, struct squadron **head)
 {
+	if (planes -> type == DEL)
+		return;
+	planes -> type = DEL;
 	if (planes -> previous)
 		planes -> previous -> s_next = planes -> s_next;
 	else {

@@ -22,6 +22,7 @@
 
 #define SUPER -10
 #define SCOUT -1
+#define DEL -1
 #define TBF 0
 #define SBD 1
 #define F4F 2

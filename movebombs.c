@@ -45,10 +45,11 @@ void movefish(struct torpedo *torp, int yank)
 
 void cleanfish(struct torpedo *fish, int yank)
 {
-	struct torpedo *thud;
+	struct torpedo *thud, *next;
 
 	thud = fish;
-	for (; fish; fish = fish -> next_torp) {
+	for (; fish; fish = next) {
+		next = fish->next_torp;
 		if (!--fish -> timeleft) {
 			if (yank && thud == amfish) {
 				thud = amfish = fish -> next_torp;
@@ -57,10 +58,7 @@ void cleanfish(struct torpedo *fish, int yank)
 			} else {
 				thud -> next_torp = fish -> next_torp;
 			}
-			/*
-			 * XXX results in bugs
-			 * free(fish);
-			 */
+			free(fish);
 		} else {
 			thud = fish;
 			drdc(fish -> course, &fish -> row, &fish -> col);
