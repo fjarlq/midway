@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <curses.h>
+#include <ncurses.h>
 #include <signal.h>
 
 #define MIDWAY 11
