@@ -33,20 +33,9 @@ wreadstr(win, str)
 WINDOW *win;
 register char *str;
 {
-	register int n = 0;
-	register int ch;
-
-	while((ch = getchar()) != '\n') {
-		if (ch == '' && n > 0)
-			n--;
-		else if (ch == '')
-			continue;
-		else
-			str[n++] = ch;
-		waddch(win, ch);
-		wrefresh(win);
-	}
-	str[n] = '\0';
+	echo();
+	wgetstr(win, str);
+	noecho();
 }
 
 inform(fmt, jerry)
