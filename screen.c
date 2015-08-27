@@ -161,7 +161,7 @@ plotplanes()
 
 screen()
 {
-	char buf[32];
+	char buf[128];
 
 	mvwputs(date, 0, 0, daytime(clock, buf));
 	mvwprintw(stats, 0, 4, "%2d", capplanes[virtual]);

@@ -19,12 +19,12 @@ extern WINDOW *notes;
 char *sbrk();
 
 STAT sbuf;
-char file_name[32];
+char file_name[128];
 
 save_game()
 {
     register int *savef;
-    char buf[80];
+    char buf[128];
 
     /*
      * get file name
@@ -80,7 +80,7 @@ char **envp;
 {
     register int inf;
     int interrupt();
-    char buf[80];
+    char buf[128];
     STAT sbuf2;
 
     if ((inf = open(file, 0)) < 0)

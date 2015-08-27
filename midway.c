@@ -103,7 +103,7 @@ playit()
 	int pr, pc;
 	int ran, tar;
 	int c;
-	char buf[32];
+	char buf[128];
 
 	for (;;) {
 		switch (c = getchar()) {

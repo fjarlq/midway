@@ -60,7 +60,7 @@ int scout, yank;
 {
    register int n;
    int speed;
-   char buf[32];
+   char buf[128];
    int dr, dc;
 
    for (; planes; planes = planes -> s_next) {
@@ -109,7 +109,7 @@ int scout, yank;
 {
    register int p, k, n, s;
    int *table;
-   char buf[32];
+   char buf[128];
    int ran;
    struct torpedo *torp;
 
@@ -278,7 +278,7 @@ struct squadron *enemy;
 int from;
 {
    int killed;
-   char buf[32];
+   char buf[128];
 
    if (shiplist[from].hits && shiplist[from].torps && capplanes[from]) {
       sprintf(buf, "%s CAP intercepting", shiplist[from].name);

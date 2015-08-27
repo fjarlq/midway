@@ -18,7 +18,7 @@ main()
 	struct passwd *getpwuid();
 	int score;
 	long st;
-	char buf[32];
+	char buf[128];
 
 	if (fp = fopen(LOGFILE, "r+")){
 		n = fread(log, sizeof(struct logs), 20, fp);

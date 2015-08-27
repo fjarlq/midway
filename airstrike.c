@@ -9,7 +9,7 @@ airstrike()		/* launch computer searches, strikes, recover. */
 	int type;
 	register int n;
 	struct squadron *planes;
-	char buf[36];
+	char buf[128];
 
 	enemy = goodbogey(0);
 	for (n=0; n < MAXSHIPS; n++) {
@@ -77,7 +77,7 @@ newbogey(boat)
 int boat;
 {
 	register int n;
-	char buf[32];
+	char buf[128];
 
 	if (!sighted[boat]) {
 		for (n = boat; n < MAXSHIPS && shiplist[n].flagship == boat; n++)

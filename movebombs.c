@@ -14,7 +14,7 @@ int yank;
 {
 	register int n;
 	int start, stop;
-	char buf[32];
+	char buf[128];
 
 	if (yank) {
 		start = JAPANESE;
@@ -89,7 +89,7 @@ int from;
 {
 	register int n;
 	int new;
-	char buf[5];
+	char buf[128];
 
 	if (from == player) {
 		inform("Your ship was sunk.",0);
@@ -138,7 +138,7 @@ int dir, from;
 	register int n, r, c, k, l;
 	int row = 0, col = 0, head; 
 	int gothim;
-	char buf[32];
+	char buf[128];
 
 	if (!firedflack[from] && shiplist[from].hits && shiplist[from].torps) {
 		firedflack[from] = 1;
@@ -188,7 +188,7 @@ int from, to;
 {
 	register int k, ran, r, c;
 	int row, col;
-	char buf[32];
+	char buf[128];
 
 	if (!firedguns[from] && shiplist[from].hits && shiplist[from].torps && shiplist[to].hits) {
 		firedguns[from] = 1;
@@ -223,7 +223,7 @@ launch(type)
 int type;
 {
 	int num, course;
-	char buf[10];
+	char buf[128];
 	struct squadron *planes;
 
 	switch (type) {
