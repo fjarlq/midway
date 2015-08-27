@@ -80,7 +80,7 @@ int scaler[10] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512};
 int amtable[AMFLEET + 1] = {0, 8, 11, MAXSHIPS};
 int japtable[JAPFLEET + 1] = {12, 19, 28, 37, 43, 47, 48, MAXSHIPS};
 int clock, scale, player, virtual, wizard;
-int scroll = -1, automatic, viewrow, viewcol;
+int scrollrow = -1, automatic, viewrow, viewcol;
 int sighted[MAXSHIPS];
 int firedflack[MAXSHIPS];
 int firedguns[MAXSHIPS];

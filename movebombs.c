@@ -61,7 +61,8 @@ int yank;
 			} else {
 				thud -> next_torp = fish -> next_torp;
 			}
-			cfree(fish);
+			// XXX results in bugs
+			// free(fish);
 		} else {
 			thud = fish;
 			drdc(fish -> course, &fish -> row, &fish -> col);

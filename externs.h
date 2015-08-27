@@ -82,7 +82,7 @@ extern int scaler[10];
 extern int amtable[AMFLEET + 1];
 extern int japtable[JAPFLEET + 1];
 extern int clock, scale, player, virtual;
-extern int scroll, automatic, viewrow, viewcol;
+extern int scrollrow, automatic, viewrow, viewcol;
 extern int sighted[MAXSHIPS];
 extern int firedflack[MAXSHIPS];
 extern int firedguns[MAXSHIPS];

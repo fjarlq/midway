@@ -53,9 +53,9 @@ inform(fmt, jerry)
 char *fmt;
 int jerry;
 {
-	scroll++;
-	if (scroll > 11) scroll = 0;
-	wmove(notes, scroll, 0);
+	scrollrow++;
+	if (scrollrow > 11) scrollrow = 0;
+	wmove(notes, scrollrow, 0);
 	wclrtoeol(notes);
 	if (jerry) {
 		wprintw(notes, fmt, shiplist[jerry -1].row, shiplist[jerry -1].col);
@@ -163,7 +163,9 @@ register struct squadron *planes, **head;
 	}
 	if (planes -> s_next)
 		planes -> s_next -> previous = planes -> previous;
-	cfree(planes);
+	// XXX results in double free crashes
+	// XXX ought to mark the freed object to check later
+	//free(planes);
 }
 
 range(ar, ac, br, bc)

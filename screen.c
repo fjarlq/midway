@@ -263,8 +263,10 @@ register int row, col;
 register char *string;
 {
 	register int n;
+	int maxy, maxx;
 
+	getmaxyx(win, maxy, maxx);
 	for (n=0; string[n]; n++)
-		if (row >= 0 && row < win -> _maxy && col+n >= 0 && col+n < win -> _maxx)
+		if (row >= 0 && row < maxy && col+n >= 0 && col+n < maxx)
 			mvwaddch(win, row, col + n, string[n]);
 }
