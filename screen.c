@@ -206,6 +206,7 @@ die()
 	mvcur(0, COLS-1, LINES-1, 0);
 	echo();
 	nocrmode();
+    endwin();
 
 	signal(SIGINT, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
