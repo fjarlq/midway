@@ -1,6 +1,6 @@
 # Leave in the -O blast you!
 
-CFLAGS= -O
+CFLAGS= -O2 -Wall -Wextra
 LDLIBS= -lncurses
 FILES= airstrike.c etc.c midway.c movebombs.c moveships.c screen.c
 OBJS= airstrike.o etc.o midway.o movebombs.o moveships.o screen.o
@@ -13,9 +13,7 @@ all: ${PROG}
 ${PROG}: ${OBJS}
 	${CC} ${OBJS} -o ${PROG} ${LDLIBS}
 
-${OBJS}: externs.h
-
-midway.o: globals.h
+${OBJS}: midway.h
 
 install: ${PUB}/${PROG} ${PUB}/${PROG}.txt
 

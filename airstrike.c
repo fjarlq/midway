@@ -1,8 +1,9 @@
 char version[] = "%W%";
 
-#include "externs.h"
+#include "midway.h"
 
-airstrike()		/* launch computer searches, strikes, recover. */
+/* launch computer searches, strikes, recover. */
+void airstrike(void)
 {
 	int enemy;
 	int send;
@@ -34,6 +35,7 @@ airstrike()		/* launch computer searches, strikes, recover. */
 					switch (shiplist[n].launching++) {
 						case 0:
 						case 4:
+						default:
 							shiplist[n].launching = 0;
 							send = 0;
 							break;
@@ -73,8 +75,7 @@ airstrike()		/* launch computer searches, strikes, recover. */
 	}
 }
 
-newbogey(boat)
-int boat;
+void newbogey(int boat)
 {
 	register int n;
 	char buf[128];
@@ -93,15 +94,14 @@ int boat;
 	}
 }
 
-struct squadron *catapult(from, size, type)
-int from, size, type;
+struct squadron *catapult(int from, int size, int type)
 {
 	register struct squadron *temp;
 
 	temp = (struct squadron *) calloc(1, sizeof(*temp));
 	if(!temp) {
 		perror("the first calloc in catapult");
-		kill(getpid(), 3);
+		exit(1);
 	}
 	if (Japanese(from)) {
 		if (type == SCOUT) {
@@ -152,8 +152,8 @@ int from, size, type;
 	return(temp);
 }
 
-goodbogey(ship)			/* finds best bogey ~ 20% type, 20% newness */
-int ship;			/* rest range */
+/* finds best bogey ~ 20% type, 20% newness; ship: rest range */
+int goodbogey(int ship)
 {
 	register int *table;
 	register int score, bestscore = -1;

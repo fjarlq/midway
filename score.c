@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <pwd.h>
-#include "globals.h"
+#include "midway.h"
 
 #define LOGFILE "/usr/public/.midwaylog"
 

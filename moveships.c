@@ -1,15 +1,17 @@
-#include "externs.h"
+#include "midway.h"
 
-moveships()
+void moveships(void)
 {
    register int n,i,p;
    int target;
 
-   if (target = goodbogey(0))
+   target = goodbogey(0);
+   if (target != 0)
       for (n=0; amtable[n] < MAXSHIPS; n++)
          if (amtable[n] != player)
             shiplist[amtable[n]].course = intercept(amtable[n], target -1);
-   if (target = goodbogey(JAPANESE))
+   target = goodbogey(JAPANESE);
+   if (target != 0)
       for (n=0; japtable[n] < MAXSHIPS; n++)
          if (japtable[n] != player)
             shiplist[japtable[n]].course = intercept(japtable[n], target -1);
@@ -54,11 +56,8 @@ moveships()
    steer(japscouts,1,0);
 }
 
-fly(planes, scout, yank)
-register struct squadron *planes;
-int scout, yank;
+void fly(struct squadron *planes, int scout, int yank)
 {
-   register int n;
    int speed;
    char buf[128];
    int dr, dc;
@@ -103,9 +102,7 @@ int scout, yank;
    }
 }
 
-steer(planes, scout, yank)
-register struct squadron *planes;
-int scout, yank;
+void steer(struct squadron *planes, int scout, int yank)
 {
    register int p, k, n, s;
    int *table;
@@ -130,12 +127,14 @@ int scout, yank;
                   s = planes -> course = table[k];
                   if (s != player)
                      flack(aimflack(s, planes), s);
-                  for (p=s+1; p < MAXSHIPS && shiplist[p].flagship == s; p++)
-                     if (p != player)
+                  for (p=s+1; p < MAXSHIPS && shiplist[p].flagship == s; p++) {
+                     if (p != player) {
                         if (rnd(2))
                            flack(aimflack(p, planes), p);
                         else
                            flack(intercept(p,s),p);
+                     }
+                  }
                   if (planes -> type == TBF) {
                      if (ran < 7) {
                         planes -> attack = -1;
@@ -156,13 +155,13 @@ int scout, yank;
                            if (!rnd(10))
                               torp -> course += rnd(5) -2;  /* a few duds */
                            planes -> course = planes -> from;
-                           planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+                           planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from].col)/10;
                         }
                      }
                   } else if (ran < 4) {
                      planes -> attack = -1;
                      planes -> course = planes -> from;
-                     planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+                     planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from].col)/10;
                      if (planes -> type == SBD) {
                         for (n=0; n < planes -> planes; n++) {
                            if (rnd(2)) {
@@ -211,15 +210,14 @@ int scout, yank;
             } else {
                planes -> course = planes -> from;
                planes -> attack = -1;
-               planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from])/10;
+               planes -> fuel = range(planes -> row, planes -> col, shiplist[planes -> from].row, shiplist[planes -> from].col)/10;
             }
          }
       }
    }
 }
 
-drdc(dir, dr, dc)
-register int dir, *dr, *dc;
+void drdc(int dir, int *dr, int *dc)
 {
    switch (dir) {
 
@@ -273,11 +271,9 @@ register int dir, *dr, *dc;
    }
 }
 
-sendcap(enemy, from)
-struct squadron *enemy;
-int from;
+void sendcap(struct squadron *enemy, int from)
 {
-   int killed;
+   int killed = 0;
    char buf[128];
 
    if (shiplist[from].hits && shiplist[from].torps && capplanes[from]) {

@@ -1,6 +1,6 @@
-#include "externs.h"
+#include "midway.h"
 
-movebombs()
+void movebombs(void)
 {
 	cleanfish(amfish, 1);	/* get rid of old fish and move live ones */
 	cleanfish(japfish, 0);
@@ -8,9 +8,7 @@ movebombs()
 	movefish(japfish, 0);
 }
 
-movefish(torp, yank)
-register struct torpedo *torp;
-int yank;
+void movefish(struct torpedo *torp, int yank)
 {
 	register int n;
 	int start, stop;
@@ -45,9 +43,7 @@ int yank;
 	}
 }
 
-cleanfish(fish, yank)
-register struct torpedo *fish;
-int yank;
+void cleanfish(struct torpedo *fish, int yank)
 {
 	struct torpedo *thud;
 
@@ -61,8 +57,10 @@ int yank;
 			} else {
 				thud -> next_torp = fish -> next_torp;
 			}
-			// XXX results in bugs
-			// free(fish);
+			/*
+			 * XXX results in bugs
+			 * free(fish);
+			 */
 		} else {
 			thud = fish;
 			drdc(fish -> course, &fish -> row, &fish -> col);
@@ -72,9 +70,7 @@ int yank;
 	}
 }
 
-plotsplash(row, col, symbol)
-register int row, col;
-register char symbol;
+void plotsplash(int row, int col, char symbol)
 {
 	if (scale == 0) {
 		row -= viewrow;
@@ -84,8 +80,7 @@ register char symbol;
 	}
 }
 
-transferflag(from)
-int from;
+void transferflag(int from)
 {
 	register int n;
 	int new;
@@ -120,7 +115,7 @@ int from;
 	}
 }
 
-redraw()
+void redraw(void)
 {
 	werase(notes);
 	werase(hole);
@@ -131,14 +126,12 @@ redraw()
 	drawboard();
 }
 
-flack(dir, from)
-int dir, from;
+void flack(int dir, int from)
 {
 	register struct squadron *planes, *target;
 	register int n, r, c, k, l;
 	int row = 0, col = 0, head; 
 	int gothim;
-	char buf[128];
 
 	if (!firedflack[from] && shiplist[from].hits && shiplist[from].torps) {
 		firedflack[from] = 1;
@@ -167,11 +160,12 @@ int dir, from;
 							break;
 						}
 					}
-					if (target -> planes <= 0)
+					if (target -> planes <= 0) {
 						if (head)
 							ditch(target, &japanese);
 						else
 							ditch(target, &american);
+					}
 				}
 			}
 			if (gothim)
@@ -183,8 +177,7 @@ int dir, from;
 	}
 }
 
-fireguns(from, to)
-int from, to;
+void fireguns(int from, int to)
 {
 	register int k, ran, r, c;
 	int row, col;
@@ -219,8 +212,7 @@ int from, to;
 	}
 }
 
-launch(type)
-int type;
+void launch(int type)
 {
 	int num, course;
 	char buf[128];

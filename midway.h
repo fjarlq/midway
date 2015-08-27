@@ -1,7 +1,5 @@
-
-#include <stdio.h>
 #include <ncurses.h>
-#include <signal.h>
+#include <stdlib.h>
 
 #define MIDWAY 11
 #define JAPANESE 12
@@ -12,7 +10,6 @@
 #define MAXROWS 24
 #define AMFLEET 3
 #define JAPFLEET 7
-
 
 #define Japanese(a) (a >= JAPANESE)
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -40,7 +37,7 @@
 #define ZEROMIN 34
 #define ZERODAY  3
 
-extern struct torpedo {
+struct torpedo {
 	int row, col;
 	int course;
 	int fromship;
@@ -49,7 +46,7 @@ extern struct torpedo {
 };
 extern struct torpedo *amfish, *japfish;
 
-extern struct ship {
+struct ship {
 	int row, col;
 	int course;
 	int type;
@@ -63,7 +60,7 @@ extern struct ship {
 	int turrets, calibre, aa, belt, deck;
 };
 
-extern struct squadron {
+struct squadron {
 	int row, col;
 	int course;
 	int type;
@@ -93,10 +90,56 @@ extern char *amess[5];
 extern char *Reef[6];
 extern char *Sand_Island[18];
 extern char *Eastern_Island[8];
-
-char shiphit();
-char *daytime();
-struct squadron *catapult();
-
 extern char shapes[5][8][5][6];
 extern struct ship shiplist[MAXSHIPS];
+
+/* airstrike.c */
+void airstrike(void);
+void newbogey(int boat);
+struct squadron *catapult(int from, int size, int type);
+int goodbogey(int ship);
+
+/* etc.c */
+int angle(int dr, int dc);
+int planesize(struct squadron *planes);
+void wreadstr(WINDOW *win, char *str);
+void inform(char *fmt, int jerry);
+char *daytime(int time, char buf[]);
+char shiphit(int type, int dir, int row, int col);
+int hit(int ran, int ar, int ac, int br, int bc, int dir, int offset);
+void vshape(int dir, int offset, int *dr, int *dc);
+void ditch(struct squadron *planes, struct squadron **head);
+int range(int ar, int ac, int br, int bc);
+
+/* midway.c */
+void playit(void);
+void drawboard(void);
+void initialize(void);
+int scanwho(char buf[]);
+
+/* movebombs.c */
+void movefish(struct torpedo *torp, int yank);
+void cleanfish(struct torpedo *fish, int yank);
+void plotsplash(int row, int col, char symbol);
+void transferflag(int from);
+void redraw(void);
+void flack(int dir, int from);
+void fireguns(int from, int to);
+void launch(int type);
+
+/* movebombs.c */
+void movebombs(void);
+
+/* moveships.c */
+void moveships(void);
+void fly(struct squadron *planes, int scout, int yank);
+void steer(struct squadron *planes, int scout, int yank);
+void drdc(int dir, int *dr, int *dc);
+void sendcap(struct squadron *enemy, int from);
+
+/* screen.c */
+void plotships(void);
+void plotplanes(void);
+void screen(void);
+void die(void);
+void interrupt(int signum);

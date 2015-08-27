@@ -1,7 +1,6 @@
-#include "externs.h"
+#include "midway.h"
 
-angle(dr, dc)
-register int dr, dc;
+int angle(int dr, int dc)
 {
 	int add = 0, sub = 0;
 
@@ -19,8 +18,7 @@ register int dr, dc;
 		return(sub ? sub - 45 : 45 + add);
 }
 
-planesize(planes)
-register struct squadron *planes;
+int planesize(struct squadron *planes)
 {
 	register int n = 0;
 
@@ -29,18 +27,14 @@ register struct squadron *planes;
 	return(n);
 }
 
-wreadstr(win, str)
-WINDOW *win;
-register char *str;
+void wreadstr(WINDOW *win, char *str)
 {
 	echo();
 	wgetstr(win, str);
 	noecho();
 }
 
-inform(fmt, jerry)
-char *fmt;
-int jerry;
+void inform(char *fmt, int jerry)
 {
 	scrollrow++;
 	if (scrollrow > 11) scrollrow = 0;
@@ -55,9 +49,7 @@ int jerry;
 		automatic = 0;
 }
 
-char *daytime(time, buf)
-int time;
-register char buf[];
+char *daytime(int time, char buf[])
 {
 	float minutes;
 	int hours, mins, over = ZERODAY;
@@ -73,9 +65,10 @@ register char buf[];
 	return(buf);
 }
 
-char shiphit(type, dir, row, col)	/* to see if a ship hit by a shell */
-register int type, dir, row, col;	/* shiphit(type, dir, hit.r - ship.r,*/
-{					/* hit.c - ship.c) != ' ' */
+/* to see if a ship hit by a shell */
+/* shiphit(type, dir, hit.r - ship.r, hit.c - ship.c) != ' ' */
+char shiphit(int type, int dir, int row, int col)
+{
 
 	if (col >= -2 && col <= 2 && row >= -2 && row <= 2)
 		return(shapes[type - CV][dir][row+2][col+2]);
@@ -83,8 +76,8 @@ register int type, dir, row, col;	/* shiphit(type, dir, hit.r - ship.r,*/
 		return(' ');
 }
 
-hit (ran, ar, ac, br, bc, dir, offset)	/* sees if a plane is hit */
-register int ran, ar, ac, br, bc, dir, offset;
+/* sees if a plane is hit */
+int hit(int ran, int ar, int ac, int br, int bc, int dir, int offset)
 {
 	int dr, dc;
 
@@ -95,8 +88,7 @@ register int ran, ar, ac, br, bc, dir, offset;
 		return(0);
 }
 
-vshape(dir, offset, dr, dc)
-int dir, offset, *dr, *dc;
+void vshape(int dir, int offset, int *dr, int *dc)
 {
 	switch(dir/45) {
 
@@ -142,8 +134,7 @@ int dir, offset, *dr, *dc;
 	}
 }
 
-ditch(planes, head)
-register struct squadron *planes, **head;
+void ditch(struct squadron *planes, struct squadron **head)
 {
 	if (planes -> previous)
 		planes -> previous -> s_next = planes -> s_next;
@@ -152,13 +143,14 @@ register struct squadron *planes, **head;
 	}
 	if (planes -> s_next)
 		planes -> s_next -> previous = planes -> previous;
-	// XXX results in double free crashes
-	// XXX ought to mark the freed object to check later
-	//free(planes);
+	/*
+	 * XXX results in double free crashes
+	 * XXX ought to mark the freed object to check later
+	 * free(planes);
+	 */
 }
 
-range(ar, ac, br, bc)
-register int ar, ac, br, bc;
+int range(int ar, int ac, int br, int bc)
 {
 	ar -= br;
 	ac -= bc;

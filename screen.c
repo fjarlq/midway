@@ -1,6 +1,8 @@
-#include "externs.h"
+#include <signal.h>
+#include <unistd.h>
+#include "midway.h"
 
-plotships()
+void plotships(void)
 {
 	register int n, k, r, c;
 	int dr = 0, dc = 0;
@@ -13,11 +15,11 @@ plotships()
 	if (scale == 0) {
 		if (viewrow < 1018 && viewrow > 957 && viewcol > 952 && viewcol < 1057) {	/* land ho! */
 			for (n=0; n < 6; n++)
-				mvwputs(view, 981 + n - viewrow, 1012 - viewcol, Reef[n]);
+				mvwaddstr(view, 981 + n - viewrow, 1012 - viewcol, Reef[n]);
 			for (n=0; n < 18; n++)
-				mvwputs(view, 1000 + n - viewrow, 1000 - viewcol, Sand_Island[n]);
+				mvwaddstr(view, 1000 + n - viewrow, 1000 - viewcol, Sand_Island[n]);
 			for (n=0; n < 8; n++)
-				mvwputs(view, 1007 + n - viewrow, 1034 - viewcol, Eastern_Island[n]);
+				mvwaddstr(view, 1007 + n - viewrow, 1034 - viewcol, Eastern_Island[n]);
 		}
 		for (n = 0; n < MAXSHIPS; n++) {
 			if (shiplist[n].hits && shiplist[n].torps && (r = shiplist[n].row - viewrow) >= 0 && r < MAXROWS && (c = shiplist[n].col - viewcol) >= 0 && c < MAXCOLS) {
@@ -29,7 +31,7 @@ plotships()
 					shiplist[n].col -= dc;
 				}
 				for (k=0; k < 5; k++)
-					mvwputs(view, r+k-2, c-2, shapes[shiplist[n].type - CV][shiplist[n].course/45][k]);
+					mvwaddstr(view, r+k-2, c-2, shapes[shiplist[n].type - CV][shiplist[n].course/45][k]);
 			}
 		}
 	} else {
@@ -67,7 +69,7 @@ plotships()
 				r = (shiplist[n].row - viewrow - HALFROW) / scaler[scale] + HALFROW;
 				c = (shiplist[n].col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
 				if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
-					mvwputs(view, r, c, overviews[shiplist[n].type]);
+					mvwaddstr(view, r, c, overviews[shiplist[n].type]);
 				}
 			}
 		}
@@ -76,8 +78,8 @@ plotships()
 				r = (shiplist[n].row - viewrow - HALFROW) / scaler[scale] + HALFROW;
 				c = (shiplist[n].col - viewcol - HALFCOL) / scaler[scale] + HALFCOL;
 				if (r >= 0 && r < MAXROWS && c >= 0 && c < MAXCOLS) {
-					mvwputs(view, r, c, overviews[shiplist[n].type]);
-					mvwputs(view, r, c + 3, shiplist[n].name);
+					mvwaddstr(view, r, c, overviews[shiplist[n].type]);
+					mvwaddstr(view, r, c + 3, shiplist[n].name);
 				}
 			}
 		}
@@ -92,11 +94,11 @@ plotships()
 		}
 	} else {
 		for (k=0; k < 5; k++)
-			mvwputs(bridge, k+2, 0, shapes[shiplist[player].type - CV][shiplist[player].course/45][k]);
+			mvwaddstr(bridge, k+2, 0, shapes[shiplist[player].type - CV][shiplist[player].course/45][k]);
 	}
 }
 
-plotplanes()
+void plotplanes(void)
 {
 	register int n, k, r, c;
 	int danger = 0;
@@ -159,11 +161,11 @@ plotplanes()
 	}
 }
 
-screen()
+void screen(void)
 {
 	char buf[128];
 
-	mvwputs(date, 0, 0, daytime(clock, buf));
+	mvwaddstr(date, 0, 0, daytime(clock, buf));
 	mvwprintw(stats, 0, 4, "%2d", capplanes[virtual]);
 	mvwprintw(stats, 1, 4, "%2d", shiplist[virtual].f4f);
 	mvwprintw(stats, 2, 4, "%2d", shiplist[virtual].tbf);
@@ -192,11 +194,10 @@ struct logs {
 	int netpoints;
 };
 
-die()
+void die(void)
 {
 	FILE *fp;
 	register int n, k;
-	struct passwd *getpwuid();
 	int score;
 	long st;
 	struct logs log[20], temp;
@@ -211,7 +212,7 @@ die()
 	signal(SIGINT, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 
-	if (fp = fopen(LOGFILE, "r+")){
+	if ((fp = fopen(LOGFILE, "r+")) != NULL) {
 		n = fread(log, sizeof(struct logs), 20, fp);
 		for (; n < 20; n++)
 			log[n].uid = log[n].fshipnum = log[n].netpoints = 0;
@@ -252,22 +253,9 @@ die()
 	exit(0);
 }
 
-interrupt()
+void interrupt(int signum)
 {
+	(void)signum;
 	automatic = 0;
 	signal(SIGINT, interrupt);
-}
-
-mvwputs(win, row, col, string)
-WINDOW *win;
-register int row, col;
-register char *string;
-{
-	register int n;
-	int maxy, maxx;
-
-	getmaxyx(win, maxy, maxx);
-	for (n=0; string[n]; n++)
-		if (row >= 0 && row < maxy && col+n >= 0 && col+n < maxx)
-			mvwaddch(win, row, col + n, string[n]);
 }
