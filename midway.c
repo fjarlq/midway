@@ -24,6 +24,8 @@ int argc;
 		exit(1);
 	}
 #endif
+
+	initialize();
 	
 	if (argc > 1) {
 		for (n=0; n < MAXSHIPS; n++)
@@ -51,7 +53,6 @@ int argc;
 	leaveok(bridge, TRUE);
 	stats = newwin(4, 24, 20, 55);
 	leaveok(stats, TRUE);
-	initialize();
 	signal(SIGINT, interrupt);
 	crmode();
 	noecho();
@@ -343,8 +344,10 @@ initialize()
 	char **mess;
 	int *table;
 
+	setbuf(stdout, NULL);
+
 	printf("Choose a side (Japanese or American) ? ");
-	gets(r);
+	fgets(r, sizeof r, stdin);
 	if (*r == 'J' || *r == 'j') {
 		mess = jmess;
 		table = japtable;
